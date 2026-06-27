@@ -3,6 +3,8 @@ const CONFIG = {
     CORS: "*",
 
     URLS: {
-        MESSAGE: "message",
-    },
+        MESSAGE: 'message',
+    }
 }
+
+module.exports = CONFIG;

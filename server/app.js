@@ -9,7 +9,7 @@ const { PORT } = CONFIG;
 const answer = new Answer();
 
 const app = express();
-server.createServer(app);
+//server.createServer(app);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
