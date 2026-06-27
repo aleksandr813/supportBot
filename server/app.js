@@ -1,11 +1,20 @@
 const express = require('express');
 const CONFIG = require('./config');
+const Router = require('./application/router/Router');
+const Answer = require('./application/answer');
+//const server = require('http');
 
 const { PORT } = CONFIG;
 
+const answer = new Answer();
+
 const app = express();
+server.createServer(app);
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }))
+
+app.use('/', new Router({ answer }))
 
 app.listen(PORT, (error) =>{
     if(!error)
