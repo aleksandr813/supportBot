@@ -8,8 +8,6 @@ class User {
         this.botId = botId;
         this.userId = userId;
         this.callbacks = callbacks || {};
-
-        this.init(options);
     }
 
     get() {
