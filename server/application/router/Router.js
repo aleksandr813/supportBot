@@ -8,9 +8,9 @@ const {
     useMessageHandler,
 } = require('./handlers');
 
-function Router({ answer }) {
+function Router(answer, mediator) {
 
-    router.post(URLS.MESSAGE, useMessageHandler(answer));
+    router.post(URLS.MESSAGE, useMessageHandler(answer, mediator));
 
     router.all('/*path', notFoundHandler);
 
