@@ -5,13 +5,13 @@ module.exports = (answer, mediator) => {
         const message = {
             token,
             role,
-            conversation_id,
+            conversationId,
             username,
-            user_id,
+            userId,
             text,
         } = req.body;
 
-        if (!message.token || !message.role || !message.conversation_id || !message.user_id || !message.text) {
+        if (!message.token || !message.role || !message.conversationId || !message.userId || !message.text) {
             return res.send(answer.bad(242));
         }
         

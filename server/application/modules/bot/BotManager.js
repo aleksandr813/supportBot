@@ -1,15 +1,9 @@
 const CONFIG = require('../../../config');
+const BaseManager = require('../BaseManager');
 
-class BotManager {
+class BotManager extends BaseManager {
     constructor(options) {
-        const { mediator, db, answer } = options;
-
-        this.answer = answer;
-        this.mediator = mediator;
-        this.db = db;
-
-        this.EVENTS = this.mediator.getEventTypes();
-        this.TRIGGERS = this.mediator.getTriggerTypes();
+        super(options)
 
         this.mediator.subscribe(this.EVENTS.NEW_MESSAGE, (data) => this.eventNewMessage(data));
     }
@@ -17,9 +11,9 @@ class BotManager {
     checkMessageValues(message) {
         if (typeof(message.token) != 'string' ||
             typeof(message.role) != 'string' ||
-            typeof(message.conversation_id) != 'number' ||
+            typeof(message.conversationId) != 'number' ||
             typeof(message.username) != 'string' ||
-            typeof(message.user_id) != 'string' ||
+            typeof(message.userId) != 'string' ||
             typeof(message.text) != 'string'
         ) return false;
         if (message.text.length() == 0) return false;
@@ -32,7 +26,7 @@ class BotManager {
             return this.answer.bad(242);
         }
 
-        
+
     }
 }
 
