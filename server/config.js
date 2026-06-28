@@ -3,7 +3,7 @@ const CONFIG = {
     CORS: "*",
 
     URLS: {
-        MESSAGE: 'message',
+        MESSAGE: '/message',
     }
 }
 
