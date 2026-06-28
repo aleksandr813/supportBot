@@ -14,7 +14,16 @@ class DB {
     }
 
     addMessage(message) {
-        this.orm.insert("messages")
+        //this.orm.insert("messages")
+    }
+
+    getUser(userId, botId) {
+        const user = orm.get('users', { external_id: userId, bot_id: botId });
+        return user;
+    }
+
+    createUser(userId, botId, username) {
+        this.orm.insert('users', { external_id: userId, bot_id: botId, username: username });
     }
 }
 

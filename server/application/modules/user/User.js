@@ -7,7 +7,7 @@ class User {
         this.username = username;
         this.botId = botId;
         this.userId = userId;
-        this.callbacks = callbacks;
+        this.callbacks = callbacks || {};
 
         this.init(options);
     }
@@ -17,12 +17,6 @@ class User {
             username: this.username,
             botId: this.botId,
             userId: this.userId,
-        }
-    }
-
-    _init(user) {
-        if (!this.callbacks.checkUserAtDB(user.userId, user.botId)) {
-            this.callbacks.addUserToDB()
         }
     }
 }
