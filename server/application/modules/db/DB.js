@@ -12,4 +12,10 @@ class DB {
     initTables() {
         console.log("Создание/инициализация таблицы")
     }
+
+    addMessage(message) {
+        this.orm.insert("messages")
+    }
 }
+
+module.exports = DB;
