@@ -1,12 +1,31 @@
 const CONFIG = require('../../../config');
 const BaseManager = require('../BaseManager');
 
-class BotManager extends BaseManager {
+class ConversationManager extends BaseManager {
     constructor(options) {
         super(options)
 
+        this.activeBots = this.loadBots();
+
         this.mediator.subscribe(this.EVENTS.NEW_MESSAGE, (data) => this.eventNewMessage(data));
     }
+
+    
+    loadBots() {
+        const bots = Object.fromEntries(this.db.getBots().map(
+            bot => [bot.token, bot]
+        ));
+        console.log("Получены боты: \n", bots);
+        return bots;
+    }
+    
+    getBotByToken(token) {
+        if (this.activeBots[token]) {
+            return this.activeBots[token];
+        }
+        return false;
+    }
+
 
     checkMessageValues(message) {
         if (typeof(message.token) != 'string' ||
@@ -23,12 +42,21 @@ class BotManager extends BaseManager {
 
     //EVENTS
     eventNewMessage(message = {}) {
-        if (!this.checkMessageValues(message)) {
+        if (message && !this.checkMessageValues(message)) {
             return this.answer.bad(242);
         }
 
+        const {
+            token,
+            role,
+            conversationGuid, 
+            username,
+            externalId,
+            text,
+            date,
+        } = message;
         this.db.addMessage()
     }
 }
 
-module.exports = BotManager;
+module.exports = ConversationManager;

@@ -13,17 +13,35 @@ class DB {
         console.log("Создание/инициализация таблицы")
     }
 
-    addMessage(message) {
-        //this.orm.insert("messages")
+    getBots() {
+        return this.orm.all('bots');
     }
 
-    getUser(userId, botId) {
-        const user = orm.get('users', { external_id: userId, bot_id: botId });
+    createConverstation(botId, externalId) {
+        
+    }
+
+    addMessage(text, externalId, conversationGuid, answer, date) {
+        this.orm.insert('message', {
+            text: text,
+            user_id: externalId,
+            conversation_guid: conversationGuid,
+            answer: answer,
+            date: date,
+        })
+    }
+
+    getUser(externalId, botId) {
+        const user = orm.get('users', { external_id: externalId, bot_id: botId });
         return user;
     }
 
-    createUser(userId, botId, username) {
-        this.orm.insert('users', { external_id: userId, bot_id: botId, username: username });
+    createUser(externalId, botId, username) {
+        this.orm.insert('users', { 
+            external_id: externalId, 
+            bot_id: botId, 
+            username: username 
+        });
     }
 }
 

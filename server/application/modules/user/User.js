@@ -2,11 +2,11 @@ const CONFIG = require('../../../config');
 
 class User {
     constructor(options) {
-        const { username, botId, userId, callbacks } = options;
+        const { username, botId, externalId, callbacks } = options;
 
         this.username = username;
         this.botId = botId;
-        this.userId = userId;
+        this.externalId = externalId;
         this.callbacks = callbacks || {};
     }
 
@@ -14,7 +14,7 @@ class User {
         return {
             username: this.username,
             botId: this.botId,
-            userId: this.userId,
+            externalId: this.externalId,
         }
     }
 }

@@ -9,12 +9,12 @@ class UserManager extends BaseManager {
     }
 
     getUser(user) {
-        const {userId, botId} = user;
-        if (this.users[`${userId};${botId}`]) {
-            return this.users[`${userId};${botId}`].get();
+        const {externalId, botId} = user;
+        if (this.users[`${externalId};${botId}`]) {
+            return this.users[`${externalId};${botId}`].get();
         }
         else {
-            _user = this.db.getUser(userId, botId)
+            _user = this.db.getUser(externalId, botId)
             if (_user) {
                 return this.loadUser(_user);
             }
@@ -26,13 +26,13 @@ class UserManager extends BaseManager {
 
     createUser(user) {
         this.db.createUser(user);
-        this.users[`${userId};${botId}`] = user;
+        this.users[`${externalId};${botId}`] = user;
         return user;
     }
 
     loadUser(user) {
         const _user = new User(user);
-        this.users[`${userId};${botId}`] = _user;
+        this.users[`${externalId};${botId}`] = _user;
         return _user;
     }
 }
