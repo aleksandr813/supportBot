@@ -1,24 +1,23 @@
-const CONFIG = require('../../../config');
 const BaseManager = require('../BaseManager');
 
 class ConversationManager extends BaseManager {
     constructor(options) {
-        super(options)
+        super(options);
 
-        this.activeBots = this.loadBots();
+        this.activeBots = {};
+        this.activeConversations = {};
+
+        this.loadBots();
 
         this.mediator.subscribe(this.EVENTS.NEW_MESSAGE, (data) => this.eventNewMessage(data));
     }
 
-    
-    loadBots() {
-        const bots = Object.fromEntries(this.db.getBots().map(
-            bot => [bot.token, bot]
-        ));
-        console.log("Получены боты: \n", bots);
-        return bots;
+    async loadBots() {
+        const bots = await this.db.getBots();
+        bots.forEach(bot => { this.activeBots[bot.token] = bot; });
+        console.log("Получены боты: \n", this.activeBots);
     }
-    
+
     getBotByToken(token) {
         if (this.activeBots[token]) {
             return this.activeBots[token];
@@ -26,36 +25,54 @@ class ConversationManager extends BaseManager {
         return false;
     }
 
-
     checkMessageValues(message) {
         if (typeof(message.token) != 'string' ||
             typeof(message.role) != 'string' ||
-            typeof(message.conversationGuid) != 'number' ||
-            typeof(message.username) != 'string' ||
+            typeof(message.conversationGuid) != 'string' ||
             typeof(message.externalId) != 'string' ||
             typeof(message.text) != 'string'
         ) return false;
-        if (message.text.length() == 0) return false;
+        if (message.text.length == 0) return false;
         if (!message.conversationGuid) return false;
         return true;
     }
 
+    async getConversation({ conversationGuid, botId, role }) {
+        if (this.activeConversations[conversationGuid]) return this.activeConversations[conversationGuid];
+        const convData = await this.db.getConversation(conversationGuid, botId);
+        if (convData) {
+            this.activeConversations[conversationGuid] = convData;
+            return convData;
+        }
+        await this.db.createConversation(conversationGuid, botId, role);
+        const conversation = { conversation_guid: conversationGuid, bot_id: botId, role };
+        this.activeConversations[conversationGuid] = conversation;
+        return conversation;
+    }
+
     //EVENTS
-    eventNewMessage(message = {}) {
-        if (message && !this.checkMessageValues(message)) {
+    async eventNewMessage(message = {}) {
+        if (!this.checkMessageValues(message)) {
             return this.answer.bad(242);
         }
 
-        const {
-            token,
-            role,
-            conversationGuid, 
-            username,
-            externalId,
-            text,
-            date,
-        } = message;
-        this.db.addMessage()
+        const { token, role, conversationGuid, username, externalId, text } = message;
+        const date = message.date || new Date().toISOString();
+
+        const bot = this.getBotByToken(token);
+        if (!bot) {
+            return this.answer.bad(403);
+        }
+
+        const botId = bot.bot_id;
+
+        await this.mediator.get(this.TRIGGERS.GET_USER, { externalId, botId, username });
+
+        await this.getConversation({ conversationGuid, botId, role });
+
+        await this.db.addMessage(text, conversationGuid, 0, date);
+
+        return this.answer.good({ received: true });
     }
 }
 

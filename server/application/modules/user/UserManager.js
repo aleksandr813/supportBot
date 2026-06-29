@@ -1,39 +1,38 @@
-const CONFIG = require('../../../config');
 const BaseManager = require('../BaseManager');
 const User = require('./User');
 
 
 class UserManager extends BaseManager {
-    constructor() {
-        this.users = {}
-    }
+    constructor(options) {
+        super(options);
+        this.activeUsers = {};
 
-    getUser(user) {
-        const {externalId, botId} = user;
-        if (this.users[`${externalId};${botId}`]) {
-            return this.users[`${externalId};${botId}`].get();
-        }
-        else {
-            _user = this.db.getUser(externalId, botId)
-            if (_user) {
-                return this.loadUser(_user);
-            }
-            else {
-                return this.createUser(user);
-            }
-        }
+        this.mediator.set(this.TRIGGERS.GET_USER, (user) => this.triggerGetUser(user));
     }
 
     createUser(user) {
-        this.db.createUser(user);
-        this.users[`${externalId};${botId}`] = user;
-        return user;
+        const { externalId, botId, username } = user;
+        this.db.createUser(externalId, botId, username);
+        const _user = new User({ externalId, botId, username });
+        this.activeUsers[`${externalId};${botId}`] = _user;
+        return _user;
     }
 
-    loadUser(user) {
-        const _user = new User(user);
-        this.users[`${externalId};${botId}`] = _user;
+    loadUser(userData) {
+        const { external_id: externalId, bot_id: botId, username } = userData;
+        const _user = new User({ externalId, botId, username });
+        this.activeUsers[`${externalId};${botId}`] = _user;
         return _user;
+    }
+
+    //TRIGGERS
+    async triggerGetUser(user) {
+        const { externalId, botId } = user;
+        const key = `${externalId};${botId}`;
+        if (this.activeUsers[key]) return this.activeUsers[key];
+        const userData = await this.db.getUser(externalId, botId);
+        if (userData) return this.loadUser(userData);
+        return this.createUser(user);
     }
 }
 

@@ -4,15 +4,17 @@ const Router = require('./application/router/Router');
 const Answer = require('./application/answer');
 const Mediator = require('./application/modules/Mediator');
 const DB = require('./application/modules/db/DB');
+const UserManager = require('./application/modules/user/UserManager');
 const ConversationManager = require('./application/modules/conversation/ConversationManager');
 //const server = require('http');
 
 const { PORT } = CONFIG;
 
 const answer = new Answer();
-const db = new DB();
+const db = new DB(CONFIG);
 const mediator = new Mediator(CONFIG.MEDIATOR);
 
+new UserManager({ mediator, db, answer });
 new ConversationManager({ mediator, db, answer });
 
 const app = express();
