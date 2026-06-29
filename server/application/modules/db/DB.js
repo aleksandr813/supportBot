@@ -48,10 +48,9 @@ class DB {
         
     }
 
-    addMessage(text, externalId, conversationGuid, answer, date) {
+    addMessage(text, conversationGuid, answer, date) {
         this.orm.insert('message', {
             text: text,
-            user_id: externalId,
             conversation_guid: conversationGuid,
             answer: answer,
             date: date,
