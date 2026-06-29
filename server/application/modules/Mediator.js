@@ -1,19 +1,11 @@
-const GLOBAL_CONFIG = require('../globalConfig');;
-
 class Mediator {
     constructor({ EVENTS, TRIGGERS }) {
         this.events = {};
         this.triggers = {};
 
-        this.EVENTS = {
-            ...GLOBAL_CONFIG.EVENTS,
-            ...EVENTS,
-        };
+        this.EVENTS = EVENTS;
 
-        this.TRIGGERS = {
-            ...GLOBAL_CONFIG.TRIGGERS,
-            ...TRIGGERS,
-        };
+        this.TRIGGERS = TRIGGERS;
 
         Object.keys(this.EVENTS).forEach(key => {
             this.events[this.EVENTS[key]] = [];
