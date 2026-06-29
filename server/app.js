@@ -4,7 +4,7 @@ const Router = require('./application/router/Router');
 const Answer = require('./application/answer');
 const Mediator = require('./application/modules/Mediator');
 const DB = require('./application/modules/db/DB');
-const BotManager = require('./application/modules/bot/BotManager');
+const ConversationManager = require('./application/modules/conversation/ConversationManager');
 //const server = require('http');
 
 const { PORT } = CONFIG;
@@ -13,7 +13,7 @@ const answer = new Answer();
 const db = new DB();
 const mediator = new Mediator(CONFIG.MEDIATOR);
 
-new BotManager({ mediator, db, answer });
+new ConversationManager({ mediator, db, answer });
 
 const app = express();
 //server.createServer(app);

@@ -40,22 +40,22 @@ class ORM {
     // SELECT одной записи
     // orm.get('users', { id: 1 })
     // orm.get('users', { role: 'admin' }, { columns: 'id, name', limit: 1, order: 'name ASC' })
-    get(table, params = null, options = {}) {
+    async get(table, params = null, options = {}) {
         const { columns = '*', operand = 'AND', order = null } = options;
         const { clause, values } = this._buildWhere(params, operand);
         const orderClause = order ? ` ORDER BY ${order}` : '';
-        return this._get(`SELECT ${columns} FROM ${table}${clause}${orderClause} LIMIT 1`, values);
+        return await this._get(`SELECT ${columns} FROM ${table}${clause}${orderClause} LIMIT 1`, values);
     }
 
     // SELECT нескольких записей
     // orm.all('users', { role: 'admin' }, { order: 'name ASC', limit: 10 })
-    all(table, params = null, options = {}) {
+    async all(table, params = null, options = {}) {
         const { columns = '*', operand = 'AND', order = null, limit = null, offset = null } = options;
         const { clause, values } = this._buildWhere(params, operand);
         const orderClause = order ? ` ORDER BY ${order}` : '';
         const limitClause = limit != null ? ` LIMIT ${limit}` : '';
         const offsetClause = offset != null ? ` OFFSET ${offset}` : '';
-        return this._all(`SELECT ${columns} FROM ${table}${clause}${orderClause}${limitClause}${offsetClause}`, values);
+        return await this._all(`SELECT ${columns} FROM ${table}${clause}${orderClause}${limitClause}${offsetClause}`, values);
     }
 
     // Количество записей
@@ -68,36 +68,36 @@ class ORM {
 
     // INSERT - принимает объект
     // orm.insert('users', { name: 'Alice', role: 'admin' })
-    insert(table, data) {
+    async insert(table, data) {
         const keys = Object.keys(data);
         const values = Object.values(data);
         const placeholders = keys.map(() => '?').join(', ');
-        return this._run(`INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`, values);
+        return await this._run(`INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`, values);
     }
 
     // UPDATE - оба аргумента объекты
     // orm.update('users', { role: 'moderator' }, { id: 1 })
-    update(table, data, params, operand = 'AND') {
+    async update(table, data, params, operand = 'AND') {
         const setClause = Object.keys(data).map(k => `${k} = ?`).join(', ');
         const setValues = Object.values(data);
         const { clause, values: whereValues } = this._buildWhere(params, operand);
-        return this._run(`UPDATE ${table} SET ${setClause}${clause}`, [...setValues, ...whereValues]);
+        return await this._run(`UPDATE ${table} SET ${setClause}${clause}`, [...setValues, ...whereValues]);
     }
 
     // UPSERT (INSERT OR REPLACE)
     // orm.upsert('users', { id: 1, name: 'Alice', role: 'admin' })
-    upsert(table, data) {
+    async upsert(table, data) {
         const keys = Object.keys(data);
         const values = Object.values(data);
         const placeholders = keys.map(() => '?').join(', ');
-        return this._run(`INSERT OR REPLACE INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`, values);
+        return await this._run(`INSERT OR REPLACE INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`, values);
     }
 
     // DELETE
     // orm.delete('users', { id: 1 })
-    delete(table, params, operand = 'AND') {
+    async delete(table, params, operand = 'AND') {
         const { clause, values } = this._buildWhere(params, operand);
-        return this._run(`DELETE FROM ${table}${clause}`, values);
+        return await this._run(`DELETE FROM ${table}${clause}`, values);
     }
 }
 

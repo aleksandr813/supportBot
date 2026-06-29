@@ -10,7 +10,34 @@ class DB {
     }
 
     initTables() {
-        console.log("Создание/инициализация таблицы")
+        this.db.serialize(() => {
+            this.db.run(`CREATE TABLE IF NOT EXISTS bots (
+                bot_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                token TEXT UNIQUE NOT NULL
+            )`);
+            this.db.run(`CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                external_id TEXT NOT NULL,
+                bot_id INTEGER NOT NULL,
+                username TEXT,
+                FOREIGN KEY (bot_id) REFERENCES bots(bot_id)
+            )`);
+            this.db.run(`CREATE TABLE IF NOT EXISTS conversations (
+                conversation_guid TEXT PRIMARY KEY,
+                bot_id INTEGER NOT NULL,
+                role TEXT NOT NULL,
+                FOREIGN KEY (bot_id) REFERENCES bots(bot_id)
+            )`);
+            this.db.run(`CREATE TABLE IF NOT EXISTS messages (
+                message_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                text TEXT NOT NULL,
+                paths_to_media TEXT,
+                conversation_guid TEXT NOT NULL,
+                date TEXT NOT NULL,
+                answer INTEGER NOT NULL DEFAULT 0,
+                FOREIGN KEY (conversation_guid) REFERENCES conversations(conversation_guid)
+            )`);
+        });
     }
 
     getBots() {
