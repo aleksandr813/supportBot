@@ -62,11 +62,11 @@ class ConversationManager extends BaseManager {
         const botGuid = this.mediator.get(this.TRIGGERS.GET_BOT, token).guid;
         const conversationGuid = this.common.guid();
 
-        const user = this.mediator.get(this.TRIGGERS.GET_USER, {externalId, botGuid});
+        const user = await this.mediator.get(this.TRIGGERS.GET_USER, {externalId, botGuid});
         if (!user) return this.answer.bad(503);
         if (user.currentConversation) return this.answer.bad(502);
 
-        this.mediator.call(this.EVENTS.SET_USER_CONVERSATION, {externalId, botGuid, conversationGuid});
+        this.mediator.call(this.EVENTS.SET_USER_CONVERSATION, {externalId, botGuid, newConversationGuid: conversationGuid});
         this.db.createConversation(conversationGuid, botGuid, externalId, role);
 
         return this.answer.good(true);

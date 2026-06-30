@@ -96,10 +96,10 @@ class DB {
         });
     }
 
-    setUserConversation(oldConversationGuid, newConversationGuid) {
-        return this.org.update("users", 
+    setUserConversation(externalId, botGuid, newConversationGuid) {
+        return this.orm.update("users", 
             { current_conversation: newConversationGuid }, 
-            { current_conversation: oldConversationGuid },
+            { external_id: externalId, bot_guid: botGuid },
         );
     }
 

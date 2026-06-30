@@ -12,10 +12,10 @@ class UserManager extends BaseManager {
         this.mediator.set(this.TRIGGERS.GET_USER, (user) => this.triggerGetUser(user));
     }
 
-    addUser(externalId, botGuid, username) { //ТОЛЬКО для активных записей
-        const _user = new User({ externalId, botGuid, username, 
+    addUser(externalId, botGuid, username, currentConversation = '') { //ТОЛЬКО для активных записей
+        const _user = new User({ externalId, botGuid, username, currentConversation,
             callbacks: {
-                setUserConversation: (oldGuid, newGuid) => this.db.setUserConversation(oldGuid, newGuid),
+                setUserConversation: (externalId, botGuid, newConversationGuid) => this.db.setUserConversation(externalId, botGuid, newConversationGuid),
             }
         });
         this.activeUsers[`${externalId};${botGuid}`] = _user;
@@ -24,8 +24,13 @@ class UserManager extends BaseManager {
 
     
     loadUser(userData) {
-        const { external_id: externalId, bot_guid: botGuid, username } = userData;
-        return this.addUser(externalId, botGuid, username);
+        console.log(userData);
+        const { 
+            external_id: externalId, 
+            bot_guid: botGuid, 
+            username: username, 
+            current_conversation: currentConversation } = userData;
+        return this.addUser(externalId, botGuid, username, currentConversation);
     }
     
     async isUserAlreadyExist(externalId, botGuid) {
@@ -48,14 +53,16 @@ class UserManager extends BaseManager {
     }
 
     async eventSetUserConversation({ externalId, botGuid, newConversationGuid} ) {
-        if (!this.triggerGetUser(externalId, botGuid)) return this.answer.bad(503);
+        const user = await this.triggerGetUser({ externalId, botGuid} );
+        if (!user) return this.answer.bad(503);
         
         const key = `${externalId};${botGuid}`;
+        //console.log(this.activeUsers[key]);
         this.activeUsers[key].setConversation(newConversationGuid);
     }
 
     //TRIGGERS
-    async triggerGetUser(externalId, botGuid) {
+    async triggerGetUser({ externalId, botGuid} ) {
         const key = `${externalId};${botGuid}`;
         if (this.activeUsers[key]) return this.activeUsers[key].get();
         const userData = await this.db.getUser(externalId, botGuid);
