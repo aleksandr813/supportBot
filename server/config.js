@@ -7,6 +7,8 @@ const CONFIG = {
         EVENTS: {
             NEW_MESSAGE: 'NEW_MESSAGE',
             ADD_USER: 'ADD_USER',
+            CREATE_CONVERSATION: 'CREATE_CONVERSATION',
+            SET_USER_CONVERSATION: 'SET_USER_CONVERSATION',
         },
         TRIGGERS: {
             GET_USER: 'GET_USER',
@@ -17,6 +19,7 @@ const CONFIG = {
     URLS: {
         MESSAGE: '/message',
         ADD_USER: '/addUser',
+        CREATE_CONVERSATION: '/createConversation',
     }
 }
 

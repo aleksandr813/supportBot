@@ -19,6 +19,11 @@ class User {
             currentConversation: this.currentConversation,
         }
     }
+
+    setConversation(conversationGuid) {
+        this.callbacks.setUserConversation(this.currentConversation, conversationGuid);
+        this.currentConversation = conversationGuid;
+    }
 }
 
 module.exports = User;

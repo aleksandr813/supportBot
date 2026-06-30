@@ -87,12 +87,20 @@ class DB {
         return this.orm.get('conversations', { conversation_guid: conversationGuid, bot_guid: botGuid });
     }
 
-    createConversation(conversationGuid, botGuid, role) {
+    createConversation(conversationGuid, botGuid, externalId, role) {
         return this.orm.insert('conversations', {
             conversation_guid: conversationGuid,
             bot_guid: botGuid,
+            external_id: externalId,
             role: role,
         });
+    }
+
+    setUserConversation(oldConversationGuid, newConversationGuid) {
+        return this.org.update("users", 
+            { current_conversation: newConversationGuid }, 
+            { current_conversation: oldConversationGuid },
+        );
     }
 
     addMessage(text, conversationGuid, answer, date) {
