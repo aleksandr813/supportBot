@@ -11,32 +11,58 @@ class DB {
 
     initTables() {
         this.db.serialize(() => {
-            this.db.run(`CREATE TABLE IF NOT EXISTS bots (
-                bot_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                token TEXT UNIQUE NOT NULL
-            )`);
-            this.db.run(`CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                external_id TEXT NOT NULL,
-                bot_id INTEGER NOT NULL,
-                username TEXT,
-                FOREIGN KEY (bot_id) REFERENCES bots(bot_id)
-            )`);
-            this.db.run(`CREATE TABLE IF NOT EXISTS conversations (
-                conversation_guid TEXT PRIMARY KEY,
-                bot_id INTEGER NOT NULL,
-                role TEXT NOT NULL,
-                FOREIGN KEY (bot_id) REFERENCES bots(bot_id)
-            )`);
-            this.db.run(`CREATE TABLE IF NOT EXISTS messages (
-                message_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                text TEXT NOT NULL,
-                paths_to_media TEXT,
-                conversation_guid TEXT NOT NULL,
-                date TEXT NOT NULL,
-                answer INTEGER NOT NULL DEFAULT 0,
-                FOREIGN KEY (conversation_guid) REFERENCES conversations(conversation_guid)
-            )`);
+            this.db.run(`
+                CREATE TABLE IF NOT EXISTS "bots" (
+                    "bot_guid" TEXT NOT NULL UNIQUE,
+                    "token" TEXT UNIQUE,
+                    PRIMARY KEY("bot_guid")
+                )
+            `);
+
+            this.db.run(`
+                CREATE TABLE IF NOT EXISTS "roles" (
+                    "role_id" INTEGER NOT NULL UNIQUE,
+                    "role" TEXT,
+                    PRIMARY KEY("role_id")
+                )
+            `);
+
+            this.db.run(`
+                CREATE TABLE IF NOT EXISTS "users" (
+                    "user_guid" TEXT NOT NULL UNIQUE,
+                    "external_id" TEXT NOT NULL,
+                    "username" TEXT,
+                    "bot_guid" TEXT,
+                    "current_conversation" TEXT,
+                    PRIMARY KEY("user_guid"),
+                    FOREIGN KEY("current_conversation") REFERENCES "conversations"("conversation_guid")
+                )
+            `);
+
+            this.db.run(`
+                CREATE TABLE IF NOT EXISTS "conversations" (
+                    "conversation_guid" TEXT NOT NULL UNIQUE,
+                    "bot_guid" TEXT,
+                    "external_id" TEXT NOT NULL,
+                    "role" TEXT,
+                    PRIMARY KEY("conversation_guid"),
+                    FOREIGN KEY("bot_guid") REFERENCES "bots"("bot_guid"),
+                    FOREIGN KEY("external_id") REFERENCES "users"("external_id")
+                )
+            `);
+
+            this.db.run(`
+                CREATE TABLE IF NOT EXISTS "messages" (
+                    "message_id" INTEGER NOT NULL UNIQUE,
+                    "text" TEXT NOT NULL,
+                    "conversation_guid" TEXT NOT NULL,
+                    "user_guid" TEXT NOT NULL,
+                    "date" TEXT NOT NULL,
+                    PRIMARY KEY("message_id" AUTOINCREMENT),
+                    FOREIGN KEY("conversation_guid") REFERENCES "conversations"("conversation_guid"),
+                    FOREIGN KEY("user_guid") REFERENCES "users"("user_guid")
+                )
+            `);
         });
     }
 
