@@ -10,14 +10,11 @@ class ConversationManager extends BaseManager {
     }
 
     checkMessageValues(message) {
-        if (typeof(message.token) != 'string' ||
-            typeof(message.role) != 'string' ||
-            typeof(message.conversationGuid) != 'string' ||
+        if (typeof(message.date) != 'string' ||
             typeof(message.externalId) != 'string' ||
             typeof(message.text) != 'string'
         ) return false;
         if (message.text.length == 0) return false;
-        if (!message.conversationGuid) return false;
         return true;
     }
 
