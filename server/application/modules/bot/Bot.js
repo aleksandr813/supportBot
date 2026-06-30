@@ -1,14 +1,14 @@
 class Bot {
     constructor(options) {
-        const { botId, token } = options;
+        const { bot_guid, token } = options;
 
-        this.botId = botId;
+        this.guid = bot_guid;
         this.token = token;
     }
 
     get() {
         return {
-            botId: this.botId,
+            guid: this.guid,
             token: this.token,
         }
     }

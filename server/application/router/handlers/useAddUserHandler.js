@@ -1,6 +1,6 @@
 module.exports = (answer, mediator) => {
     const { ADD_USER } = mediator.getEventTypes();
-    return (req, res) => {
+    return async (req, res) => {
 
         const user = {
             token,
@@ -10,17 +10,17 @@ module.exports = (answer, mediator) => {
         } = req.body;
 
         const { GET_BOT } = mediator.getTriggerTypes();
-        if (!user.token || !this.mediator.get(GET_BOT, user.token)) {
+        if (!user.token || !mediator.get(GET_BOT, user.token)) {
             return res.send(answer.bad(403));
         }
-        
+
         if (!user.username || !user.externalId) {
             return res.send(answer.bad(242));
         }
         
-        const response = mediator.call(ADD_USER, user);
+        const response = await mediator.call(ADD_USER, user);
 
-        if (response?.result) {
+        if (response) {
             return res.send(response);
         }
 

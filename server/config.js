@@ -16,6 +16,7 @@ const CONFIG = {
 
     URLS: {
         MESSAGE: '/message',
+        ADD_USER: '/addUser',
     }
 }
 

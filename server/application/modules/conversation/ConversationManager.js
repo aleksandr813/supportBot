@@ -21,15 +21,15 @@ class ConversationManager extends BaseManager {
         return true;
     }
 
-    async getConversation({ conversationGuid, botId, role }) {
+    async getConversation({ conversationGuid, botGuid, role }) {
         if (this.activeConversations[conversationGuid]) return this.activeConversations[conversationGuid];
-        const convData = await this.db.getConversation(conversationGuid, botId);
+        const convData = await this.db.getConversation(conversationGuid, botGuid);
         if (convData) {
             this.activeConversations[conversationGuid] = convData;
             return convData;
         }
-        await this.db.createConversation(conversationGuid, botId, role);
-        const conversation = { conversation_guid: conversationGuid, bot_id: botId, role };
+        await this.db.createConversation(conversationGuid, botGuid, role);
+        const conversation = { conversation_guid: conversationGuid, bot_guid: botGuid, role };
         this.activeConversations[conversationGuid] = conversation;
         return conversation;
     }
@@ -48,11 +48,11 @@ class ConversationManager extends BaseManager {
             return this.answer.bad(403);
         }
 
-        const botId = bot.bot_id;
+        const botGuid = bot.bot_guid;
 
-        await this.mediator.get(this.TRIGGERS.GET_USER, { externalId, botId, username });
+        await this.mediator.get(this.TRIGGERS.GET_USER, { externalId, botGuid, username });
 
-        await this.getConversation({ conversationGuid, botId, role });
+        await this.getConversation({ conversationGuid, botGuid, role });
 
         await this.db.addMessage(text, conversationGuid, 0, date);
 

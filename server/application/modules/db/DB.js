@@ -70,26 +70,27 @@ class DB {
         return this.orm.all('bots');
     }
 
-    getUser(externalId, botId) {
-        return this.orm.get('users', { external_id: externalId, bot_id: botId });
+    getUser(externalId, botGuid) {
+        return this.orm.get('users', { external_id: externalId, bot_guid: botGuid });
     }
 
-    createUser(externalId, botId, username) {
+    createUser(userGuid, externalId, botGuid, username) {
         return this.orm.insert('users', {
+            user_guid: userGuid,
             external_id: externalId,
-            bot_id: botId,
+            bot_guid: botGuid,
             username: username,
         });
     }
 
-    getConversation(conversationGuid, botId) {
-        return this.orm.get('conversations', { conversation_guid: conversationGuid, bot_id: botId });
+    getConversation(conversationGuid, botGuid) {
+        return this.orm.get('conversations', { conversation_guid: conversationGuid, bot_guid: botGuid });
     }
 
-    createConversation(conversationGuid, botId, role) {
+    createConversation(conversationGuid, botGuid, role) {
         return this.orm.insert('conversations', {
             conversation_guid: conversationGuid,
-            bot_id: botId,
+            bot_guid: botGuid,
             role: role,
         });
     }
