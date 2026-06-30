@@ -6,6 +6,7 @@ class ConversationManager extends BaseManager {
 
         this.activeConversations = {};
 
+        this.mediator.subscribe(this.EVENTS.END_CONVERSATION, (data) => this.eventEndConversation(data));
         this.mediator.subscribe(this.EVENTS.CREATE_CONVERSATION, (data) => this.eventCreateConversation(data));
         this.mediator.subscribe(this.EVENTS.NEW_MESSAGE, (data) => this.eventNewMessage(data));
     }
@@ -68,6 +69,20 @@ class ConversationManager extends BaseManager {
 
         this.mediator.call(this.EVENTS.SET_USER_CONVERSATION, {externalId, botGuid, newConversationGuid: conversationGuid});
         this.db.createConversation(conversationGuid, botGuid, externalId, role);
+
+        return this.answer.good(true);
+    }
+
+    async eventEndConversation(data) {
+        const { token, externalId } = data;
+        const botGuid = this.mediator.get(this.TRIGGERS.GET_BOT, token).guid;
+
+        const user = await this.mediator.get(this.TRIGGERS.GET_USER, {externalId, botGuid});
+        if (!user) return this.answer.bad(503);
+
+        if (!user.currentConversation) return this.answer.bad(504);
+
+        this.mediator.call(this.EVENTS.SET_USER_CONVERSATION, {externalId, botGuid, newConversationGuid: ''});
 
         return this.answer.good(true);
     }

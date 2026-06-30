@@ -24,7 +24,7 @@ class UserManager extends BaseManager {
 
     
     loadUser(userData) {
-        console.log(userData);
+        //console.log(userData);
         const { 
             external_id: externalId, 
             bot_guid: botGuid, 
