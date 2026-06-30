@@ -4,25 +4,9 @@ class ConversationManager extends BaseManager {
     constructor(options) {
         super(options);
 
-        this.activeBots = {};
         this.activeConversations = {};
 
-        this.loadBots();
-
         this.mediator.subscribe(this.EVENTS.NEW_MESSAGE, (data) => this.eventNewMessage(data));
-    }
-
-    async loadBots() {
-        const bots = await this.db.getBots();
-        bots.forEach(bot => { this.activeBots[bot.token] = bot; });
-        console.log("Получены боты: \n", this.activeBots);
-    }
-
-    getBotByToken(token) {
-        if (this.activeBots[token]) {
-            return this.activeBots[token];
-        }
-        return false;
     }
 
     checkMessageValues(message) {
@@ -59,7 +43,7 @@ class ConversationManager extends BaseManager {
         const { token, role, conversationGuid, username, externalId, text } = message;
         const date = message.date || new Date().toISOString();
 
-        const bot = this.getBotByToken(token);
+        const bot = this.mediator.get(this.TRIGGERS.GET_BOT, token);
         if (!bot) {
             return this.answer.bad(403);
         }
@@ -72,7 +56,7 @@ class ConversationManager extends BaseManager {
 
         await this.db.addMessage(text, conversationGuid, 0, date);
 
-        return this.answer.good({ received: true });
+        return this.answer.good(true);
     }
 }
 

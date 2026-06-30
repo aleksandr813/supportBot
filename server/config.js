@@ -5,10 +5,12 @@ const CONFIG = {
 
     MEDIATOR: {
         EVENTS: {
-            NEW_MESSAGE: 'NEW_MESSAGE', // обработка нового сообщение
+            NEW_MESSAGE: 'NEW_MESSAGE',
+            ADD_USER: 'ADD_USER',
         },
         TRIGGERS: {
             GET_USER: 'GET_USER',
+            GET_BOT: 'GET_BOT',
         },
     },
 

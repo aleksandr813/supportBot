@@ -4,15 +4,20 @@ module.exports = (answer, mediator) => {
 
         const message = {
             token,
-            role,
-            conversationGuid, 
-            username,
+            //role, уходит в запрос создания диалога
+            // conversationGuid, хранит бэк в current conversationc 
+            //username, уходит в создание пользователя/диалога
             externalId,
             text,
             date,
         } = req.body;
 
-        if (!message.token || !message.role || !message.conversationGuid || !message.externalId || !message.text) {
+        const { GET_BOT } = mediator.getTriggerTypes();
+        if (!user.token || !this.mediator.get(GET_BOT, user.token)) {
+            return res.send(answer.bad(403));
+        }
+
+        if (!message.role || !message.conversationGuid || !message.externalId || !message.text) {
             return res.send(answer.bad(242));
         }
         
