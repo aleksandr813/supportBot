@@ -28,6 +28,19 @@ class DB {
             `);
 
             this.db.run(`
+                CREATE TABLE IF NOT EXISTS "conversations" (
+                    "conversation_guid" TEXT NOT NULL UNIQUE,
+                    "bot_guid" TEXT,
+                    "external_id" TEXT NOT NULL,
+                    "role" TEXT,
+                    "date" TEXT,
+                    PRIMARY KEY("conversation_guid"),
+                    FOREIGN KEY("bot_guid") REFERENCES "bots"("bot_guid"),
+                    FOREIGN KEY("external_id") REFERENCES "users"("external_id")
+                )
+            `);
+
+            this.db.run(`
                 CREATE TABLE IF NOT EXISTS "users" (
                     "user_guid" TEXT NOT NULL UNIQUE,
                     "external_id" TEXT NOT NULL,
@@ -36,18 +49,6 @@ class DB {
                     "current_conversation" TEXT,
                     PRIMARY KEY("user_guid"),
                     FOREIGN KEY("current_conversation") REFERENCES "conversations"("conversation_guid")
-                )
-            `);
-
-            this.db.run(`
-                CREATE TABLE IF NOT EXISTS "conversations" (
-                    "conversation_guid" TEXT NOT NULL UNIQUE,
-                    "bot_guid" TEXT,
-                    "external_id" TEXT NOT NULL,
-                    "role" TEXT,
-                    PRIMARY KEY("conversation_guid"),
-                    FOREIGN KEY("bot_guid") REFERENCES "bots"("bot_guid"),
-                    FOREIGN KEY("external_id") REFERENCES "users"("external_id")
                 )
             `);
 
@@ -93,7 +94,7 @@ class DB {
             bot_guid: botGuid,
             external_id: externalId,
             role: role,
-            date: date,
+            start_date: date,
         });
     }
 
@@ -105,6 +106,11 @@ class DB {
     }
 
     addMessage(text, conversationGuid, userGuid, date) {
+        this.orm.update('conversations', 
+            { last_date: date },
+            { conversation_guid: conversationGuid },
+        );
+
         return this.orm.insert('messages', {
             text: text,
             conversation_guid: conversationGuid,
