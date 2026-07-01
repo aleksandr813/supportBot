@@ -33,7 +33,8 @@ class DB {
                     "bot_guid" TEXT,
                     "external_id" TEXT NOT NULL,
                     "role" TEXT,
-                    "date" TEXT,
+                    "start_date" TEXT,
+                    "last_date" TEXT,
                     PRIMARY KEY("conversation_guid"),
                     FOREIGN KEY("bot_guid") REFERENCES "bots"("bot_guid"),
                     FOREIGN KEY("external_id") REFERENCES "users"("external_id")
