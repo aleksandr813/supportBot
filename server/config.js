@@ -18,7 +18,7 @@ const CONFIG = {
     },
 
     URLS: {
-        MESSAGE: '/message',
+        MESSAGE: '/newMessage',
         ADD_USER: '/addUser',
         CREATE_CONVERSATION: '/createConversation',
         END_CONVERSATION: '/endConversation',

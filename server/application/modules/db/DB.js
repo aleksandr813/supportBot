@@ -87,12 +87,13 @@ class DB {
         return this.orm.get('conversations', { conversation_guid: conversationGuid, bot_guid: botGuid });
     }
 
-    createConversation(conversationGuid, botGuid, externalId, role) {
+    createConversation(conversationGuid, botGuid, externalId, role, date) {
         return this.orm.insert('conversations', {
             conversation_guid: conversationGuid,
             bot_guid: botGuid,
             external_id: externalId,
             role: role,
+            date: date,
         });
     }
 
@@ -103,11 +104,11 @@ class DB {
         );
     }
 
-    addMessage(text, conversationGuid, answer, date) {
+    addMessage(text, conversationGuid, userGuid, date) {
         return this.orm.insert('messages', {
             text: text,
             conversation_guid: conversationGuid,
-            answer: answer,
+            user_guid: userGuid,
             date: date,
         });
     }

@@ -11,49 +11,19 @@ class ConversationManager extends BaseManager {
         this.mediator.subscribe(this.EVENTS.NEW_MESSAGE, (data) => this.eventNewMessage(data));
     }
 
-    checkMessageValues(message) {
-        if (typeof(message.date) != 'string' ||
-            typeof(message.externalId) != 'string' ||
-            typeof(message.text) != 'string'
-        ) return false;
-        if (message.text.length == 0) return false;
-        return true;
-    }
-
-    async getConversation({ conversationGuid, botGuid, role }) {
-        if (this.activeConversations[conversationGuid]) return this.activeConversations[conversationGuid];
-        const convData = await this.db.getConversation(conversationGuid, botGuid);
-        if (convData) {
-            this.activeConversations[conversationGuid] = convData;
-            return convData;
-        }
-        await this.db.createConversation(conversationGuid, botGuid, role);
-        const conversation = { conversation_guid: conversationGuid, bot_guid: botGuid, role };
-        this.activeConversations[conversationGuid] = conversation;
-        return conversation;
-    }
-
     //EVENTS
     async eventNewMessage(message = {}) {
-        if (!this.checkMessageValues(message)) {
-            return this.answer.bad(242);
-        }
+        const { token, externalId, text } = message;
+        const date = new Date().toISOString();
 
-        const { token, role, conversationGuid, username, externalId, text } = message;
-        const date = message.date || new Date().toISOString();
+        const botGuid = this.mediator.get(this.TRIGGERS.GET_BOT, token).guid;
 
-        const bot = this.mediator.get(this.TRIGGERS.GET_BOT, token);
-        if (!bot) {
-            return this.answer.bad(403);
-        }
+        const user = await this.mediator.get(this.TRIGGERS.GET_USER, {externalId, botGuid});
+        console.log(user);
+        if (!user) return this.answer.bad(503);
+        if (!user.currentConversation) return this.answer.bad(504);
 
-        const botGuid = bot.bot_guid;
-
-        await this.mediator.get(this.TRIGGERS.GET_USER, { externalId, botGuid, username });
-
-        await this.getConversation({ conversationGuid, botGuid, role });
-
-        await this.db.addMessage(text, conversationGuid, 0, date);
+        await this.db.addMessage(text, user.currentConversation, user.userGuid , date);
 
         return this.answer.good(true);
     }
@@ -62,13 +32,14 @@ class ConversationManager extends BaseManager {
         const { token, externalId, role } = data;
         const botGuid = this.mediator.get(this.TRIGGERS.GET_BOT, token).guid;
         const conversationGuid = this.common.guid();
+        const date = new Date().toISOString();
 
         const user = await this.mediator.get(this.TRIGGERS.GET_USER, {externalId, botGuid});
         if (!user) return this.answer.bad(503);
         if (user.currentConversation) return this.answer.bad(502);
 
         this.mediator.call(this.EVENTS.SET_USER_CONVERSATION, {externalId, botGuid, newConversationGuid: conversationGuid});
-        this.db.createConversation(conversationGuid, botGuid, externalId, role);
+        this.db.createConversation(conversationGuid, botGuid, externalId, role, date);
 
         return this.answer.good(true);
     }

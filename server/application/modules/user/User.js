@@ -2,9 +2,10 @@ const CONFIG = require('../../../config');
 
 class User {
     constructor(options) {
-        const { username, botGuid, externalId, currentConversation, callbacks } = options;
+        const { username, userGuid, botGuid, externalId, currentConversation, callbacks } = options;
 
         this.username = username;
+        this.userGuid = userGuid;
         this.botGuid = botGuid;
         this.externalId = externalId;
         this.callbacks = callbacks || {};
@@ -13,6 +14,7 @@ class User {
 
     get() {
         return {
+            userGuid: this.userGuid,
             username: this.username,
             botGuid: this.botGuid,
             externalId: this.externalId,

@@ -12,8 +12,8 @@ class UserManager extends BaseManager {
         this.mediator.set(this.TRIGGERS.GET_USER, (user) => this.triggerGetUser(user));
     }
 
-    addUser(externalId, botGuid, username, currentConversation = '') { //ТОЛЬКО для активных записей
-        const _user = new User({ externalId, botGuid, username, currentConversation,
+    addUser(externalId, userGuid, botGuid, username, currentConversation = '') { //Добавляет только как активную запись!
+        const _user = new User({ externalId, userGuid, botGuid, username, currentConversation,
             callbacks: {
                 setUserConversation: (externalId, botGuid, newConversationGuid) => this.db.setUserConversation(externalId, botGuid, newConversationGuid),
             }
@@ -27,10 +27,11 @@ class UserManager extends BaseManager {
         //console.log(userData);
         const { 
             external_id: externalId, 
+            user_guid: userGuid,
             bot_guid: botGuid, 
             username: username, 
             current_conversation: currentConversation } = userData;
-        return this.addUser(externalId, botGuid, username, currentConversation);
+        return this.addUser(externalId, userGuid, botGuid, username, currentConversation);
     }
     
     async isUserAlreadyExist(externalId, botGuid) {
@@ -48,7 +49,7 @@ class UserManager extends BaseManager {
         const userGuid = this.common.guid();
         if (await this.isUserAlreadyExist(externalId, botGuid)) return this.answer.bad(501);
         this.db.createUser(userGuid, externalId, botGuid, username);
-        this.addUser(externalId, botGuid, username);
+        this.addUser(externalId, userGuid, botGuid, username);
         return this.answer.good(true);
     }
 
