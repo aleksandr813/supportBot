@@ -1,0 +1,110 @@
+.login-page {
+  --color-bg: #fbfdfd;
+  --color-surface: #ffffff;
+  --color-border: #e2e9ea;
+
+  --color-text: #223034;
+  --color-text-inverse: #ffffff;
+
+  --color-accent-dark: #4aa5ae;
+  --color-accent-hover: #3f9199;
+
+  --font-base: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-size-sm: 13px;
+  --font-size-md: 14px;
+  --font-weight-semibold: 600;
+
+  --space-5: 20px;
+  --space-8: 32px;
+
+  --radius-md: 12px;
+  --radius-lg: 18px;
+
+  --shadow-lg: 0 20px 45px -25px rgba(34, 48, 52, 0.25);
+
+  --transition-fast: 0.15s ease;
+
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+  font-family: var(--font-base);
+  color: var(--color-text);
+  padding: var(--space-8);
+  box-sizing: border-box;
+}
+
+/* ===== Карточка формы ===== */
+.login-card {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-8);
+  box-sizing: border-box;
+}
+
+/* ===== Поля ===== */
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.login-field__label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+}
+
+.login-field__input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 14px;
+  font-size: var(--font-size-md);
+  font-family: inherit;
+  color: var(--color-text);
+  background: #fcfdfd;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.login-field__input:focus {
+  border-color: var(--color-accent-dark);
+  box-shadow: 0 0 0 3px rgba(100, 194, 203, 0.18);
+}
+
+.login-field__input:focus-visible {
+  outline: none;
+}
+
+.login-submit {
+  margin-top: 4px;
+  width: 100%;
+  padding: 12px 16px;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-inverse);
+  background: var(--color-accent-dark);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.login-submit:hover {
+  background: var(--color-accent-hover);
+}
+
+.login-submit:focus-visible {
+  outline: 2px solid var(--color-accent-dark);
+  outline-offset: 2px;
+}
