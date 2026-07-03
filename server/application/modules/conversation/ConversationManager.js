@@ -9,6 +9,12 @@ class ConversationManager extends BaseManager {
         this.mediator.subscribe(this.EVENTS.END_CONVERSATION, (data) => this.eventEndConversation(data));
         this.mediator.subscribe(this.EVENTS.CREATE_CONVERSATION, (data) => this.eventCreateConversation(data));
         this.mediator.subscribe(this.EVENTS.NEW_MESSAGE, (data) => this.eventNewMessage(data));
+
+        if (!this.io) return;
+        this.io.on('connection', (socket) => {
+            //socket.on(MESSAGE, (data) => this.sendMessage(data, socket));
+            socket.on('disconnect', () => this.handleDisconnect(socket));
+        });
     }
 
     //EVENTS
