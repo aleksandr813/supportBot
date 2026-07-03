@@ -2,11 +2,12 @@ const CONFIG = require('../../config');
 
 class BaseManager {
     constructor(options) {
-        const { mediator, db, answer, common } = options;
+        const { mediator, db, io, answer, common } = options;
 
         this.answer = answer;
         this.mediator = mediator;
         this.db = db;
+        this.io = io;
         this.common = common;
 
         this.EVENTS = this.mediator.getEventTypes();

@@ -21,9 +21,9 @@ const common = new Common();
 const db = new DB(CONFIG);
 const mediator = new Mediator(CONFIG.MEDIATOR);
 
-new BotManager({mediator, db, answer, common});
-new UserManager({ mediator, db, answer, common });
-new ConversationManager({ mediator, db, answer, common });
+new BotManager({mediator, db, io, answer, common});
+new UserManager({ mediator, db, io, answer, common });
+new ConversationManager({ mediator, io, db, answer, common });
 
 app.use(CONFIG.CORS.middleware);
 app.use(express.json());
