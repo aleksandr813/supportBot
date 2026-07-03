@@ -1,6 +1,15 @@
 const CONFIG = {
+
+    CORS: {
+        origin: "*",
+        middleware: (_, res, next) => {
+            res.header('Content-Type', 'application/json; charset=utf-8');
+            res.header('Access-Control-Allow-Origin', '*');
+            next();
+        }
+    },
     PORT: 3003,
-    CORS: "*",
+
     DATABASE: 'data.db',
 
     MEDIATOR: {

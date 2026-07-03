@@ -10,7 +10,11 @@ const ConversationManager = require('./application/modules/conversation/Conversa
 const BotManager = require('./application/modules/bot/BotManager');
 //const server = require('http');
 
-const { PORT } = CONFIG;
+const { PORT, CORS } = CONFIG;
+
+const app = express();
+const server = require('http').createServer(app);
+const io = require('socket.io')(server, {cors: CONFIG.CORS});
 
 const answer = new Answer();
 const common = new Common();
@@ -21,18 +25,13 @@ new BotManager({mediator, db, answer, common});
 new UserManager({ mediator, db, answer, common });
 new ConversationManager({ mediator, db, answer, common });
 
-const app = express();
-//server.createServer(app);
-
+app.use(CONFIG.CORS.middleware);
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }))
+app.use(express.urlencoded({ extended: true }));
 
-app.use('/', new Router(answer, mediator))
+app.use(express.static(`${__dirname}/public`));
+app.use('/', new Router(answer, mediator));
 
-app.listen(PORT, (error) =>{
-    if(!error)
-        console.log(`Server is started at PORT ${PORT}`);
-    else 
-        console.log("Error occurred, server can't start", error);
-    }
-);
+const startLog = `supportBot Server started at PORT ${PORT} \nwith CORS: ${CONFIG.CORS.origin}`;
+
+server.listen(PORT, () => console.log(startLog));
