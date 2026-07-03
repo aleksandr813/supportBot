@@ -19,7 +19,7 @@ class ConversationManager extends BaseManager {
         const botGuid = this.mediator.get(this.TRIGGERS.GET_BOT, token).guid;
 
         const user = await this.mediator.get(this.TRIGGERS.GET_USER, {externalId, botGuid});
-        console.log(user);
+        //console.log(user);
         if (!user) return this.answer.bad(503);
         if (!user.currentConversation) return this.answer.bad(504);
 
