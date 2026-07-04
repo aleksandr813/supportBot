@@ -119,6 +119,10 @@ class DB {
             date: date,
         });
     }
+
+    getOperatorByLogin(name) {
+        return this.orm.get('operators', {name: name});
+    }
 }
 
 module.exports = DB;

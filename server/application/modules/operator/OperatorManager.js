@@ -1,5 +1,9 @@
 const BaseManager = require('../BaseManager');
+const Operator = require('./Operator');
+
 const CONFIG = require('../../../config');
+
+const { LOGIN } = CONFIG.SOCKET;
 
 class OperatorManager extends BaseManager {
     constructor(options) {
@@ -19,7 +23,16 @@ class OperatorManager extends BaseManager {
     }
 
     socketLogin(data = {}, socket) {
-        
+        const { name, passwordHash } = data;
+        if (!name || !passwordHash) {
+            return socket.emit(LOGIN, this.answer.bad(242));
+        }
+        const operator = new Operator({ db: this.db, common: this.common, socketId: socket.id });
+        if (await operator.login(name, passwordHash)) {
+            this.operators[operator.guid] = operator;
+            return socket.emit(LOGIN, this.answer.good(operator.get()));
+        }
+        return socket.emit(LOGIN, this.answer.bad(301));
     }
 }
 

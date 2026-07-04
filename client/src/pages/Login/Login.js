@@ -1,18 +1,39 @@
-import { useState } from "react";
+import React, { useState, useContext, useEffect } from 'react';
+import { ServerContext } from '../../App';
+import { MediatorContext } from '../../App';
+
+
 import "./Login.css";
 
 export default function Login() {
+
+  const server = useContext(ServerContext);
+  const mediator = useContext(MediatorContext);
+
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleAuthButton = (e) => {
     e.preventDefault();
     console.log("Вход:", { login, password });
   };
 
+  const handleLogin = () => {
+    console.log("LOGIN!!!");
+  }
+
+  useEffect(() => {
+      if (!mediator) return;
+      const { LOGIN } = mediator.getEventTypes();
+      mediator.subscribe(LOGIN, handleLogin);
+      return () => {
+        mediator.unsubscribe(LOGIN, handleLogin);
+      }
+  }, []);
+
   return (
     <div className="login-page">
-      <form className="login-card" onSubmit={handleSubmit}>
+      <div className="login-card">
         <label className="login-field">
           <span className="login-field__label">Логин</span>
           <input
@@ -35,10 +56,15 @@ export default function Login() {
           />
         </label>
 
-        <button type="submit" className="login-submit">
+        <button
+          type="button"
+          className="login-submit"
+          onClick={handleAuthButton}
+        >
           Войти
         </button>
-      </form>
+      </div>
     </div>
+
   );
 }
