@@ -2,14 +2,30 @@ import React from 'react';
 import logo from './logo.svg';
 import PageManager from './pages/PageManager';
 
+import Mediator from './services/Mediator/Mediator';
+import Server from './services/Server/Server';
+
+import useMediator from './services/Mediator/useMediator';
+
 import './App.css';
 
+
+export const MediatorContext = React.createContext(null);
+export const ServerContext = React.createContext(null);
+
 function App() {
+  const mediator = useMediator();
+  const server = new Server(mediator);
+
   return (
     <div className="App">
-        <div className='app'>
-          <PageManager />
-        </div>
+      <MediatorContext value={mediator}>
+        <ServerContext value={server}>
+          <div className='app'>
+            <PageManager />
+          </div>
+        </ServerContext>
+      </MediatorContext>
     </div>
   );
 }

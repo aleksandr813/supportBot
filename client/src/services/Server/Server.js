@@ -1,4 +1,5 @@
 import { io, Socket } from "socket.io-client";
+import CONFIG from "../../config";
 
 const { HOST } = CONFIG;
 
@@ -20,3 +21,5 @@ class Server {
     }
 
 }
+
+export default Server;

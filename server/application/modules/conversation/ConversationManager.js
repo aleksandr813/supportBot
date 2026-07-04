@@ -13,7 +13,7 @@ class ConversationManager extends BaseManager {
         if (!this.io) return;
         this.io.on('connection', (socket) => {
             //socket.on(MESSAGE, (data) => this.sendMessage(data, socket));
-            socket.on('disconnect', () => this.handleDisconnect(socket));
+            //socket.on('disconnect', () => this.handleDisconnect(socket));
         });
     }
 
