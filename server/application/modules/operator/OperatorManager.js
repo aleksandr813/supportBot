@@ -19,7 +19,7 @@ class OperatorManager extends BaseManager {
     }
 
     socketLogin(data = {}, socket) {
-
+        
     }
 }
 
