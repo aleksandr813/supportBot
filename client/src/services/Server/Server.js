@@ -1,7 +1,8 @@
 import { io, Socket } from "socket.io-client";
 import CONFIG from "../../config";
 
-const { HOST, SOCKET } = CONFIG;
+const { HOST } = CONFIG;
+const { LOGIN } = CONFIG.SOCKET;
 
 class Server {
     constructor(mediator, store) {
@@ -16,14 +17,14 @@ class Server {
             console.log('connect');
 
 
-            this.socket.on(SOCKET.LOGIN, (data) => this.handleLogin(data));
+            this.socket.on(LOGIN, (data) => this.handleLogin(data));
         });
     }
 
     request(event, data = {}) {
         const _data = {
             ...this.store.getUserParams(),
-            ...this.data,
+            ...data,
         
         }
         this.socket.emit(event, _data);
@@ -32,7 +33,7 @@ class Server {
     // SENDING METHODS
 
     login(data) {
-        this.request(SOCKET.LOGIN, data);
+        this.request(LOGIN, data);
     }
 
 

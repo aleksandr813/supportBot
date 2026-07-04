@@ -6,14 +6,17 @@ class Operator {
 
         this.guid;
         this.name;
+        this.token;
     }
 
-    async login(name, _passwordHash) {
+    async login(name, passwordHash) {
         const data = await this.db.getOperatorByLogin(name);
-        const { guid: operator_guid, passwordHash: password_hash } = data;
-        if (_passwordHash === passwordHash) {
+        if (!data) return false;
+        const { guid, password_hash } = data;
+        if (passwordHash === password_hash) {
             this.name = name;
             this.guid = guid;
+            this.token = this.common.token();
             return true;
         }
         return false;
@@ -23,6 +26,7 @@ class Operator {
         return {
             name: this.name,
             guid: this.guid,
+            token: this.token,
             socketId: this.socketId,
         }
     }

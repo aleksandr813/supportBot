@@ -8,6 +8,7 @@ const DB = require('./application/modules/db/DB');
 const UserManager = require('./application/modules/user/UserManager');
 const ConversationManager = require('./application/modules/conversation/ConversationManager');
 const BotManager = require('./application/modules/bot/BotManager');
+const OperatorManager = require('./application/modules/operator/OperatorManager');
 //const server = require('http');
 
 const { PORT, CORS } = CONFIG;
@@ -24,6 +25,7 @@ const mediator = new Mediator(CONFIG.MEDIATOR);
 new BotManager({mediator, db, io, answer, common});
 new UserManager({ mediator, db, io, answer, common });
 new ConversationManager({ mediator, io, db, answer, common });
+new OperatorManager({ mediator, db, io, answer, common });
 
 app.use(CONFIG.CORS.middleware);
 app.use(express.json());

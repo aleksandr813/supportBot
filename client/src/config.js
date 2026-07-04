@@ -11,7 +11,7 @@ const CONFIG = {
     },
 
     SOCKET: {
-
+        LOGIN: 'LOGIN',
     },
 }
 

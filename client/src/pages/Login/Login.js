@@ -1,7 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { ServerContext } from '../../App';
-import { MediatorContext } from '../../App';
-
+import md5 from 'md5';
+import { ServerContext, MediatorContext } from '../../App';
 
 import "./Login.css";
 
@@ -14,8 +13,8 @@ export default function Login() {
   const [password, setPassword] = useState("");
 
   const handleAuthButton = (e) => {
-    e.preventDefault();
-    console.log("Вход:", { login, password });
+    const passwordHash = md5(password);
+    server.login({name: login, passwordHash});
   };
 
   const handleLogin = () => {

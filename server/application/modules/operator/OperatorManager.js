@@ -22,7 +22,20 @@ class OperatorManager extends BaseManager {
         });
     }
 
-    socketLogin(data = {}, socket) {
+    handleDisconnect(socket) {
+        const operator = this.getOperatorBySocketId(socket.id);
+        if (!operator) {
+            console.log('Оператор с таким socketId не найден');
+            return;
+        }
+        this.operators[operator.guid] = null
+    }
+
+    getOperatorBySocketId(socketId) {
+        return Object.values(this.operators).find(operator => operator.socketId === socketId) || null;
+    }
+
+    async socketLogin(data = {}, socket) {
         const { name, passwordHash } = data;
         if (!name || !passwordHash) {
             return socket.emit(LOGIN, this.answer.bad(242));
@@ -36,4 +49,4 @@ class OperatorManager extends BaseManager {
     }
 }
 
-module.exports
+module.exports = OperatorManager;
