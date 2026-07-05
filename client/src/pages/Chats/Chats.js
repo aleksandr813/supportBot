@@ -11,19 +11,25 @@ export default function Chats({ setPage, PAGES }) {
   const server = useContext(ServerContext);
   const mediator = useContext(MediatorContext);
 
-  const [login, setLogin] = useState("");
-  const [password, setPassword] = useState("");
+  const [conversations, setConversations] = useState([]);
 
-  const handleConversations = () => {
+  const handleConversations = (data) => {
+    setConversations(data.items);
+  }
 
+  const handleSelectConversation = (conversationGuid) => {
+    setPage(PAGES.CHAT);
   }
 
   useEffect(() => {
     if (!mediator) return;
     const { GET_CONVERSATIONS } = mediator.getEventTypes();
-    mediator.set(GET_CONVERSATIONS, handleConversations);
+    mediator.subscribe(GET_CONVERSATIONS, handleConversations);
+
+    server.getConversations();
+
     return () => {
-        mediator.set(GET_CONVERSATIONS, handleConversations);
+        mediator.unsubscribe(GET_CONVERSATIONS, handleConversations);
     }
   }, []);
 
@@ -40,9 +46,12 @@ export default function Chats({ setPage, PAGES }) {
   };
 
   return (
-    <div className="chats-page">
+    <div className="chats-block">
         <Sidebar onNavigate={handleNavigate} onLogout={handleLogout} />
-        <ConversationsList conversations={conversations}/>
+        <ConversationsList
+            conversations={conversations}
+            onSelectConversation={handleSelectConversation}
+        />
     </div>
 
   );

@@ -2,7 +2,7 @@ import { io, Socket } from "socket.io-client";
 import CONFIG from "../../config";
 
 const { HOST } = CONFIG;
-const { LOGIN } = CONFIG.SOCKET;
+const { LOGIN, GET_CONVERSATIONS } = CONFIG.SOCKET;
 
 class Server {
     constructor(mediator, store) {
@@ -15,7 +15,6 @@ class Server {
     setupSocketListeners() {
         this.socket.on("connect", () => {
             console.log('connect');
-
 
             this.socket.on(LOGIN, (data) => this.handleLogin(data));
             this.socket.on(GET_CONVERSATIONS, (data) => this.handleGetConversations(data));
@@ -37,16 +36,21 @@ class Server {
         this.request(LOGIN, data);
     }
 
+    getConversations(data) {
+        this.request(GET_CONVERSATIONS, data);
+    }
+
 
     //SOCKET HANDLERS
 
-    handleLogin(data) {
-        this.store.setUserParams(data.guid, data.token);
+    handleLogin(response) {
+        const { guid, token } = response.data
+        this.store.setUserParams(guid, token);
         this.mediator.call(LOGIN);
     }
 
-    handleGetConversations(data) {
-        this.mediator.get(GET_CONVERSATIONS, handleGetConversations());
+    handleGetConversations(response) {
+        this.mediator.call(GET_CONVERSATIONS, response.data);
     }
 
 }

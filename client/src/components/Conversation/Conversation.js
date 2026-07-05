@@ -2,7 +2,17 @@ import React from 'react';
 import './Conversation.css';
 
 function formatDate(date) {
-    return '2-12-2026'
+    const _date = new Date(date);
+
+    const day = _date.getDate();
+    const month = _date.getMonth() + 1;
+    const year = _date.getFullYear();
+
+    const hours = String(_date.getHours()).padStart(2, '0');
+    const minutes = String(_date.getMinutes()).padStart(2, '0');
+
+    const result = `${day}-${month}-${year} ${hours}:${minutes}`;
+    return result;
 }
 
 export default function Conversation({ username, role, lastMessageDate, messageText, onClick }) {
