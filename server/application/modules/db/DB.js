@@ -19,7 +19,6 @@ class DB {
                 )
             `);
 
-            
             this.db.run(`
                 CREATE TABLE IF NOT EXISTS "conversations" (
                     "conversation_guid" TEXT NOT NULL UNIQUE,
@@ -31,9 +30,9 @@ class DB {
                     PRIMARY KEY("conversation_guid"),
                     FOREIGN KEY("bot_guid") REFERENCES "bots"("bot_guid"),
                     FOREIGN KEY("external_id") REFERENCES "users"("external_id")
-                    )
+                )
             `);
-            
+
             this.db.run(`
                 CREATE TABLE IF NOT EXISTS "users" (
                     "user_guid" TEXT NOT NULL UNIQUE,
@@ -43,9 +42,9 @@ class DB {
                     "current_conversation" TEXT,
                     PRIMARY KEY("user_guid"),
                     FOREIGN KEY("current_conversation") REFERENCES "conversations"("conversation_guid")
-                    )
+                )
             `);
-                    
+
             this.db.run(`
                 CREATE TABLE IF NOT EXISTS "messages" (
                     "message_id" INTEGER NOT NULL UNIQUE,
@@ -56,16 +55,19 @@ class DB {
                     PRIMARY KEY("message_id" AUTOINCREMENT),
                     FOREIGN KEY("conversation_guid") REFERENCES "conversations"("conversation_guid"),
                     FOREIGN KEY("user_guid") REFERENCES "users"("user_guid")
-                    )
-            `)
+                )
+            `);
 
             this.db.run(`
                 CREATE INDEX IF NOT EXISTS idx_conversations_date_guid 
                 ON conversations(last_date DESC, conversation_guid DESC)
             `);
-                        
+
+            this.db.run(`
+                CREATE INDEX IF NOT EXISTS idx_messages_conv_id 
+                ON messages(conversation_guid, message_id DESC)
+            `);
         });
-                    
     }
 
     getBots() {
@@ -124,13 +126,20 @@ class DB {
         return this.orm.get('operators', {name: name});
     }
 
-    getConversationsList(limit = 20, cursor = null) {
+    getConversationsList(limit = 20, cursor) {
         let sql = `
             SELECT 
                 c.conversation_guid,
                 u.username,
                 c.last_date,
-                c.role
+                c.role,
+                (
+                    SELECT m.text 
+                    FROM messages m 
+                    WHERE m.conversation_guid = c.conversation_guid 
+                    ORDER BY m.message_id DESC 
+                    LIMIT 1
+                ) AS last_message
             FROM conversations c
             JOIN users u ON u.external_id = c.external_id AND u.bot_guid = c.bot_guid
         `;
