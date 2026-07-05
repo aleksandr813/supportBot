@@ -1,4 +1,5 @@
 import React from 'react';
+
 import './Conversation.css';
 
 function formatDate(date) {
@@ -15,6 +16,13 @@ function formatDate(date) {
     return result;
 }
 
+function getTextPreview(messageText) {
+    if (!messageText) return;
+    if (messageText.length <= 20) return messageText;
+    const textPreview = messageText.slice(0, 20) + "...";
+    return textPreview;
+}
+
 export default function Conversation({ username, role, lastMessageDate, messageText, onClick }) {
   return (
     <button type="button" className="conversation" onClick={onClick}>
@@ -25,7 +33,7 @@ export default function Conversation({ username, role, lastMessageDate, messageT
 
       <span className="conversation__role">{role}</span>
 
-      <span className="conversation__message">{messageText}</span>
+      <span className="conversation__message">{getTextPreview(messageText)}</span>
     </button>
   );
 }

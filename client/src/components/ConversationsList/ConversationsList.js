@@ -1,11 +1,25 @@
 import React from 'react';
+import { useEffect } from "react";
 import Conversation from '../Conversation/Conversation';
 
 import './ConversationsList.css';
 
 export default function ConversationsList({ conversations, onSelectConversation }) {
 
-  return (
+    const containerRef = useRef(null);
+
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        container.addEventListener('scroll', handleScroll);
+
+        return () => {
+          container.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
+
+    return (
     <div className="conversations-list">
         {conversations.map((conv) => (
             <Conversation
@@ -18,5 +32,5 @@ export default function ConversationsList({ conversations, onSelectConversation 
             />
         ))}
     </div>
-  );
+    );
 }
