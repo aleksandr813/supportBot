@@ -4,7 +4,7 @@ import { ServerContext, MediatorContext } from '../../App';
 
 import "./Login.css";
 
-export default function Login() {
+export default function Login({ setPage, PAGES }) {
 
   const server = useContext(ServerContext);
   const mediator = useContext(MediatorContext);
@@ -18,7 +18,7 @@ export default function Login() {
   };
 
   const handleLogin = () => {
-    console.log("LOGIN!!!");
+    setPage(PAGES.CHATS);
   }
 
   useEffect(() => {

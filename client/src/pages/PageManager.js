@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Login from './Login/Login';
+import Chats from './Chats/Chats';
 
 import CONFIG from '../config';
 
@@ -14,11 +15,13 @@ const PageManager = () => {
 
     const props = {
         setPage,
+        PAGES,
     };
 
     return (
         <>
             {page === PAGES.LOGIN && <Login {...props} />}
+            {page === PAGES.CHATS && <Chats {...props} />}
         </>
     );
 };
