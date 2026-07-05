@@ -18,6 +18,7 @@ class Server {
 
 
             this.socket.on(LOGIN, (data) => this.handleLogin(data));
+            this.socket.on(GET_CONVERSATIONS, (data) => this.handleGetConversations(data));
         });
     }
 
@@ -42,6 +43,10 @@ class Server {
     handleLogin(data) {
         this.store.setUserParams(data.guid, data.token);
         this.mediator.call(LOGIN);
+    }
+
+    handleGetConversations(data) {
+        this.mediator.get(GET_CONVERSATIONS, handleGetConversations());
     }
 
 }
