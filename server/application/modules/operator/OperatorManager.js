@@ -26,7 +26,7 @@ class OperatorManager extends BaseManager {
             console.log('Оператор с таким socketId не найден');
             return;
         }
-        this.operators[operator.guid] = null
+        delete this.operators[operator.guid];
     }
 
     getOperatorBySocketId(socketId) {

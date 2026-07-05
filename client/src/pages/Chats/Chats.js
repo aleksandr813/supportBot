@@ -17,9 +17,21 @@ export default function Chats({ setPage, PAGES }) {
     //
   }, []);
 
+  const handleNavigate = (key) => {
+    if (key === "chats") {
+      setPage(PAGES.CHATS);
+    } else if (key === "settings") {
+      setPage(PAGES.SETTINGS);
+    }
+  };
+
+  const handleLogout = () => {
+    setPage(PAGES.LOGIN);
+  };
+
   return (
     <div className="chats-page">
-        <Sidebar></Sidebar>
+        <Sidebar onNavigate={handleNavigate} onLogout={handleLogout} />
     </div>
 
   );
