@@ -21,9 +21,10 @@ class OperatorManager extends BaseManager {
     }
 
     handleDisconnect(socket) {
+        console.log(socket.id);
         const operator = this.getOperatorBySocketId(socket.id);
         if (!operator) {
-            console.log('Оператор с таким socketId не найден');
+            //console.log('Оператор с таким socketId не найден');
             return;
         }
         delete this.operators[operator.guid];
