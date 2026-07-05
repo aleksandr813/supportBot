@@ -3,7 +3,7 @@ const Operator = require('./Operator');
 
 const CONFIG = require('../../../config');
 
-const { LOGIN } = CONFIG.SOCKET;
+const { LOGIN, LOGOUT } = CONFIG.SOCKET;
 
 class OperatorManager extends BaseManager {
     constructor(options) {
@@ -15,6 +15,7 @@ class OperatorManager extends BaseManager {
 
         this.io.on('connection', (socket) => {
             socket.on(LOGIN, (data) => this.socketLogin(data, socket));
+            socket.on(LOGOUT, (data) => this.socketLogout(data, socket));
 
             socket.on('disconnect', () => this.handleDisconnect(socket));
         });
@@ -45,6 +46,14 @@ class OperatorManager extends BaseManager {
             return socket.emit(LOGIN, this.answer.good(operator.get()));
         }
         return socket.emit(LOGIN, this.answer.bad(301));
+    }
+
+    socketLogout(data, socket) {
+        const { token } = data;
+        const operator = this.getOperatorBySocketId(socket.id);
+        if (operator.token = token) {
+            operator.logout();
+        }
     }
 }
 

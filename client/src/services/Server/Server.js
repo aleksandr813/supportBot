@@ -2,7 +2,7 @@ import { io, Socket } from "socket.io-client";
 import CONFIG from "../../config";
 
 const { HOST } = CONFIG;
-const { LOGIN, GET_CONVERSATIONS } = CONFIG.SOCKET;
+const { LOGIN, LOGOUT, GET_CONVERSATIONS } = CONFIG.SOCKET;
 
 class Server {
     constructor(mediator, store) {
@@ -34,6 +34,10 @@ class Server {
 
     login(data) {
         this.request(LOGIN, data);
+    }
+
+    logout() {
+        this.request(LOGOUT, {});
     }
 
     getConversations(data) {

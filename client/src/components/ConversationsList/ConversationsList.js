@@ -1,26 +1,35 @@
-import React from 'react';
-import { useEffect } from "react";
+import React, { useEffect, useRef } from 'react';
 import Conversation from '../Conversation/Conversation';
 
 import './ConversationsList.css';
 
-export default function ConversationsList({ conversations, onSelectConversation }) {
-
+export default function ConversationsList({ 
+    conversations, 
+    onSelectConversation, 
+    onLoadMore, 
+    isLoading, 
+    hasMore 
+}) {
     const containerRef = useRef(null);
 
     useEffect(() => {
         const container = containerRef.current;
         if (!container) return;
 
-        container.addEventListener('scroll', handleScroll);
+        const handleScroll = () => {
+            if (container.scrollHeight - container.scrollTop <= container.clientHeight + 50) {
+                onLoadMore();
+            }
+        };
 
+        container.addEventListener('scroll', handleScroll);
         return () => {
           container.removeEventListener('scroll', handleScroll);
         };
-    }, []);
+    }, [onLoadMore]);
 
     return (
-    <div className="conversations-list">
+    <div className="conversations-list" ref={containerRef}>
         {conversations.map((conv) => (
             <Conversation
                 key={conv.conversation_guid}
@@ -31,6 +40,17 @@ export default function ConversationsList({ conversations, onSelectConversation 
                 onClick={() => onSelectConversation(conv.conversation_guid)}
             />
         ))}
+
+        {isLoading && (
+            <div className="conversations-list__status conversations-list__status--loading">
+                Загрузка...
+            </div>
+        )}
+        {!hasMore && conversations.length > 0 && (
+            <div className="conversations-list__status conversations-list__status--end">
+                Больше нет диалогов
+            </div>
+        )}
     </div>
     );
 }

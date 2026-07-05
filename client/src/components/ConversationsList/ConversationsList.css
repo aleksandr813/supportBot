@@ -1,0 +1,46 @@
+.conversations-list {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.conversations-list__status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    font-size: 13px;
+    color: #8a8f98;
+    text-align: center;
+}
+
+.conversations-list__status--loading {
+    color: #6b7280;
+}
+
+.conversations-list__status--error {
+    color: #d64545;
+    flex-direction: column;
+}
+
+.conversations-list__retry {
+    border: 1px solid #d64545;
+    background: transparent;
+    color: #d64545;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.conversations-list__retry:hover {
+    background: #d64545;
+    color: #fff;
+}
+
+.conversations-list__status--end {
+    color: #b0b4bb;
+}

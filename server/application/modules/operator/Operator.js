@@ -22,6 +22,10 @@ class Operator {
         return false;
     }
 
+    logout() {
+        this.token = '';
+    }
+
     get() {
         return {
             name: this.name,
