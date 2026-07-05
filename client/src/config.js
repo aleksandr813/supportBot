@@ -12,6 +12,7 @@ const CONFIG = {
 
     SOCKET: {
         LOGIN: 'LOGIN',
+        GET_CONVERSATIONS: 'GET_CONVERSATIONS',
     },
 }
 

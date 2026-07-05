@@ -13,10 +13,8 @@ class OperatorManager extends BaseManager {
 
         if (!this.io) return;
 
-        const { SOCKET } = CONFIG;
-
         this.io.on('connection', (socket) => {
-            socket.on(SOCKET.LOGIN, (data) => this.socketLogin(data, socket));
+            socket.on(LOGIN, (data) => this.socketLogin(data, socket));
 
             socket.on('disconnect', () => this.handleDisconnect(socket));
         });

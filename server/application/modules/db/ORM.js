@@ -99,6 +99,11 @@ class ORM {
         const { clause, values } = this._buildWhere(params, operand);
         return await this._run(`DELETE FROM ${table}${clause}`, values);
     }
+
+    // RAW - сырой запрос
+    async raw(sql, values = []) {
+        return await this._all(sql, values);
+    }
 }
 
 module.exports = ORM;

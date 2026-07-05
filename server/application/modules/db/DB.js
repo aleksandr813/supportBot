@@ -19,14 +19,7 @@ class DB {
                 )
             `);
 
-            this.db.run(`
-                CREATE TABLE IF NOT EXISTS "roles" (
-                    "role_id" INTEGER NOT NULL UNIQUE,
-                    "role" TEXT,
-                    PRIMARY KEY("role_id")
-                )
-            `);
-
+            
             this.db.run(`
                 CREATE TABLE IF NOT EXISTS "conversations" (
                     "conversation_guid" TEXT NOT NULL UNIQUE,
@@ -38,9 +31,9 @@ class DB {
                     PRIMARY KEY("conversation_guid"),
                     FOREIGN KEY("bot_guid") REFERENCES "bots"("bot_guid"),
                     FOREIGN KEY("external_id") REFERENCES "users"("external_id")
-                )
+                    )
             `);
-
+            
             this.db.run(`
                 CREATE TABLE IF NOT EXISTS "users" (
                     "user_guid" TEXT NOT NULL UNIQUE,
@@ -50,9 +43,9 @@ class DB {
                     "current_conversation" TEXT,
                     PRIMARY KEY("user_guid"),
                     FOREIGN KEY("current_conversation") REFERENCES "conversations"("conversation_guid")
-                )
+                    )
             `);
-
+                    
             this.db.run(`
                 CREATE TABLE IF NOT EXISTS "messages" (
                     "message_id" INTEGER NOT NULL UNIQUE,
@@ -63,9 +56,16 @@ class DB {
                     PRIMARY KEY("message_id" AUTOINCREMENT),
                     FOREIGN KEY("conversation_guid") REFERENCES "conversations"("conversation_guid"),
                     FOREIGN KEY("user_guid") REFERENCES "users"("user_guid")
-                )
+                    )
+            `)
+
+            this.db.run(`
+                CREATE INDEX IF NOT EXISTS idx_conversations_date_guid 
+                ON conversations(last_date DESC, conversation_guid DESC)
             `);
+                        
         });
+                    
     }
 
     getBots() {
@@ -122,6 +122,29 @@ class DB {
 
     getOperatorByLogin(name) {
         return this.orm.get('operators', {name: name});
+    }
+
+    getConversationsList(limit = 20, cursor = null) {
+        let sql = `
+            SELECT 
+                c.conversation_guid,
+                u.username,
+                c.last_date,
+                c.role
+            FROM conversations c
+            JOIN users u ON u.external_id = c.external_id AND u.bot_guid = c.bot_guid
+        `;
+        const values = [];
+
+        if (cursor) {
+            sql += ` WHERE (c.last_date < ? OR (c.last_date = ? AND c.conversation_guid < ?))`;
+            values.push(cursor.lastDate, cursor.lastDate, cursor.conversationGuid);
+        }
+
+        sql += ` ORDER BY c.last_date DESC, c.conversation_guid DESC LIMIT ?`;
+        values.push(limit);
+
+        return this.orm.raw(sql, values);
     }
 }
 

@@ -1,5 +1,9 @@
 const BaseManager = require('../BaseManager');
 
+const CONFIG = require('../../../config');
+
+const { GET_CONVERSATIONS } = CONFIG.SOCKET;
+
 class ConversationManager extends BaseManager {
     constructor(options) {
         super(options);
@@ -12,8 +16,7 @@ class ConversationManager extends BaseManager {
 
         if (!this.io) return;
         this.io.on('connection', (socket) => {
-            //socket.on(MESSAGE, (data) => this.sendMessage(data, socket));
-            //socket.on('disconnect', () => this.handleDisconnect(socket));
+            socket.on(GET_CONVERSATIONS, (data) => this.socketGetConversationsList(data, socket));
         });
     }
 
@@ -62,6 +65,29 @@ class ConversationManager extends BaseManager {
         this.mediator.call(this.EVENTS.SET_USER_CONVERSATION, {externalId, botGuid, newConversationGuid: ''});
 
         return this.answer.good(true);
+    }
+
+    //SOCKET
+    async socketGetConversationsList(data, socket) {
+        const { limit = 20, cursor = null } = data;
+
+        const rows = await this.db.getConversationsList(limit + 1, cursor );
+
+        const hasMore = rows.length > limit;
+        const items = hasMore ? rows.slice(0, limit) : rows;
+
+        const lastItem = items[items.length - 1];
+        const nextCursor = hasMore && lastItem
+            ? { lastDate: lastItem.last_date, conversationGuid: lastItem.conversation_guid }
+            : null;
+
+        const conversatons ={
+            items,
+            nextCursor,
+            hasMore,
+        };
+
+        socket.emit(GET_CONVERSATIONS, this.answer.good(conversatons));
     }
 }
 
