@@ -1,0 +1,77 @@
+.conversation-block {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+}
+
+.conversation-block__messages {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.conversation-block__status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    font-size: 13px;
+    color: #8a8f98;
+    text-align: center;
+}
+
+.conversation-block__status--loading {
+    color: #6b7280;
+}
+
+.conversation-block__status--end {
+    color: #b0b4bb;
+}
+
+.conversation-block__input-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 12px 16px;
+    background: #ffffff;
+    border-top: 1px solid #eef2f2;
+}
+
+.conversation-block__input {
+    flex: 1;
+    min-height: 20px;
+    max-height: 160px;
+    padding: 8px 12px;
+    border: 1px solid #d7dede;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    line-height: 20px;
+    resize: none;
+    overflow-y: auto;
+    outline: none;
+}
+
+.conversation-block__input:focus {
+    border-color: #4aa5ae;
+}
+
+.conversation-block__send {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    background: #4aa5ae;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.conversation-block__send:hover {
+    background: #3d8f97;
+}

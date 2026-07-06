@@ -2,7 +2,7 @@ const BaseManager = require('../BaseManager');
 
 const CONFIG = require('../../../config');
 
-const { GET_CONVERSATIONS, GET_CONVERSATION_INFO } = CONFIG.SOCKET;
+const { GET_CONVERSATIONS, GET_CONVERSATION_INFO, GET_CONVERSATION_MESSAGES } = CONFIG.SOCKET;
 
 class ConversationManager extends BaseManager {
     constructor(options) {
@@ -97,7 +97,7 @@ class ConversationManager extends BaseManager {
 
         const conversationInfo = await this.db.getConversationInfo(conversationGuid);
 
-        socket.emit(GET_CONVERSATION_INFO, this.answer.good(conversationInfo));
+        socket.emit(GET_CONVERSATION_INFO, this.answer.good(conversationInfo[0]));
     }
 
     async socketGetConversationMessages(data, socket) {
@@ -117,7 +117,8 @@ class ConversationManager extends BaseManager {
             nextCursor = null;
         }
 
-        socket.emit(this.answer.good({
+        socket.emit(GET_CONVERSATION_MESSAGES, this.answer.good({
+            conversationGuid,
             items,
             nextCursor,
             hasMore,

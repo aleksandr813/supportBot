@@ -2,7 +2,7 @@ import { io, Socket } from "socket.io-client";
 import CONFIG from "../../config";
 
 const { HOST } = CONFIG;
-const { LOGIN, LOGOUT, GET_CONVERSATIONS, GET_CONVERSATION_MESSAGES } = CONFIG.SOCKET;
+const { LOGIN, LOGOUT, GET_CONVERSATIONS, GET_CONVERSATION_MESSAGES, GET_CONVERSATION_INFO } = CONFIG.SOCKET;
 
 class Server {
     constructor(mediator, store) {
@@ -18,6 +18,8 @@ class Server {
 
             this.socket.on(LOGIN, (data) => this.handleLogin(data));
             this.socket.on(GET_CONVERSATIONS, (data) => this.handleGetConversations(data));
+            this.socket.on(GET_CONVERSATION_MESSAGES, (data) => this.handleGetConversationMessages(data));
+            this.socket.on(GET_CONVERSATION_INFO, (data) => this.handleGetConversationInfo(data));
         });
     }
 
@@ -48,6 +50,10 @@ class Server {
         this.request(GET_CONVERSATION_MESSAGES, data)
     }
 
+    getConversationInfo(data) {
+        this.request(GET_CONVERSATION_INFO, data)
+    }
+
 
     //SOCKET HANDLERS
 
@@ -63,6 +69,10 @@ class Server {
 
     handleGetConversationMessages(response) {
         this.mediator.call(GET_CONVERSATION_MESSAGES, response.data);
+    }
+
+    handleGetConversationInfo(response) {
+        this.mediator.call(GET_CONVERSATION_INFO, response.data);
     }
 
 }

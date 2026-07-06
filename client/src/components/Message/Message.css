@@ -1,0 +1,33 @@
+.message {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 14px;
+    margin: 4px 12px;
+    max-width: 70%;
+    background: #eaf5f6;
+    border-radius: 10px;
+}
+
+.message--outgoing {
+    align-self: flex-end;
+    background: #4aa5ae;
+}
+
+.message--outgoing .message__text,
+.message--outgoing .message__date {
+    color: #ffffff;
+}
+
+.message__text {
+    font-size: 14px;
+    color: #1f2a2c;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.message__date {
+    align-self: flex-end;
+    font-size: 11px;
+    color: #7c8b8d;
+}
