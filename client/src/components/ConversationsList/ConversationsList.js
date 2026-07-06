@@ -1,16 +1,65 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Conversation from '../Conversation/Conversation';
 
 import './ConversationsList.css';
 
-export default function ConversationsList({ 
-    conversations, 
-    onSelectConversation, 
-    onLoadMore, 
-    isLoading, 
-    hasMore 
+export default function ConversationsList({
+    server,
+    mediator,
+    onSelectConversation,
 }) {
     const containerRef = useRef(null);
+
+    const [conversations, setConversations] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
+
+    const isLoadingRef = useRef(false);
+    const cursorRef = useRef(null);
+
+    const loadMore = useCallback(() => {
+        if (isLoadingRef.current || !hasMore) return;
+
+        isLoadingRef.current = true;
+        setIsLoading(true);
+
+        server.getConversations({ cursor: cursorRef.current, limit: 20 });
+    }, [hasMore, server]);
+
+    useEffect(() => {
+        if (!mediator) return;
+
+        const { GET_CONVERSATIONS } = mediator.getEventTypes();
+
+        const handleConversations = (data) => {
+            setConversations(prev => {
+                const isFirstLoad = prev.length === 0;
+                const combined = isFirstLoad ? data.items : [...prev, ...data.items];
+
+                const uniqueConversations = Array.from(
+                    new Map(combined.map(item => [item.conversation_guid, item])).values()
+                );
+
+                return uniqueConversations;
+            });
+
+            cursorRef.current = data.nextCursor;
+            setHasMore(data.hasMore);
+
+            setIsLoading(false);
+            isLoadingRef.current = false;
+        };
+
+        mediator.subscribe(GET_CONVERSATIONS, handleConversations);
+
+        setIsLoading(true);
+        isLoadingRef.current = true;
+        server.getConversations({ limit: 20 });
+
+        return () => {
+            mediator.unsubscribe(GET_CONVERSATIONS, handleConversations);
+        }
+    }, [mediator, server]);
 
     useEffect(() => {
         const container = containerRef.current;
@@ -18,7 +67,7 @@ export default function ConversationsList({
 
         const handleScroll = () => {
             if (container.scrollHeight - container.scrollTop <= container.clientHeight + 50) {
-                onLoadMore();
+                loadMore();
             }
         };
 
@@ -26,7 +75,7 @@ export default function ConversationsList({
         return () => {
           container.removeEventListener('scroll', handleScroll);
         };
-    }, [onLoadMore]);
+    }, [loadMore]);
 
     return (
     <div className="conversations-list" ref={containerRef}>

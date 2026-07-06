@@ -40,6 +40,7 @@ class DB {
                     "username" TEXT,
                     "bot_guid" TEXT,
                     "current_conversation" TEXT,
+                    "phone" TEXT,
                     PRIMARY KEY("user_guid"),
                     FOREIGN KEY("current_conversation") REFERENCES "conversations"("conversation_guid")
                 )
@@ -155,6 +156,45 @@ class DB {
 
         return this.orm.raw(sql, values);
     }
+
+    getConversationInfo(conversationGuid) {
+        const sql = `
+            SELECT 
+                c.role,
+                u.username,
+                u.phone
+                FROM conversations c
+                JOIN users u ON u.external_id = c.external_id AND u.bot_guid = c.bot_guid
+				WHERE c.conversation_guid = ?
+        `;
+
+        return this.orm.raw(sql, [conversationGuid])
+    }
+
+    getConversationMessages(conversationGuid, { limit = 20, cursor = null } = {}) {
+        let sql = `
+            SELECT
+                m.message_id,
+                m.text,
+                m.date,
+                u.external_id
+            FROM messages m
+            JOIN users u ON m.user_guid = u.user_guid
+            WHERE m.conversation_guid = ?
+        `;
+        const values = [conversationGuid];
+
+        if (cursor) {
+            sql += ` AND m.message_id < ?`;
+            values.push(cursor);
+        }
+
+        sql += ` ORDER BY m.message_id DESC LIMIT ?`;
+        values.push(limit);
+
+        return this.orm.raw(sql, values);
+    }
+
 }
 
 module.exports = DB;

@@ -2,7 +2,7 @@ const BaseManager = require('../BaseManager');
 
 const CONFIG = require('../../../config');
 
-const { GET_CONVERSATIONS } = CONFIG.SOCKET;
+const { GET_CONVERSATIONS, GET_CONVERSATION_INFO } = CONFIG.SOCKET;
 
 class ConversationManager extends BaseManager {
     constructor(options) {
@@ -17,6 +17,8 @@ class ConversationManager extends BaseManager {
         if (!this.io) return;
         this.io.on('connection', (socket) => {
             socket.on(GET_CONVERSATIONS, (data) => this.socketGetConversationsList(data, socket));
+            socket.on(GET_CONVERSATION_INFO, (data) => this.socketGetConversationInfo(data, socket));
+            socket.on(GET_CONVERSATION_MESSAGES, (data) => this.socketGetConversationMessages(data, socket));
         });
     }
 
@@ -88,6 +90,38 @@ class ConversationManager extends BaseManager {
         };
 
         socket.emit(GET_CONVERSATIONS, this.answer.good(conversatons));
+    }
+
+    async socketGetConversationInfo(data, socket) {
+        const { conversationGuid } = data;
+
+        const conversationInfo = await this.db.getConversationInfo(conversationGuid);
+
+        socket.emit(GET_CONVERSATION_INFO, this.answer.good(conversationInfo));
+    }
+
+    async socketGetConversationMessages(data, socket) {
+        const { conversationGuid, limit = 20, cursor = null } = data;
+
+        const rows = await this.db.getConversationMessages(conversationGuid, { limit: limit + 1, cursor });
+
+        const hasMore = rows.length > limit;
+        const items = hasMore ? rows.slice(0, limit) : rows;
+
+        const lastItem = items[items.length - 1];
+        let nextCursor;
+
+        if (hasMore && lastItem) {
+            nextCursor = lastItem.message_id;
+        } else {
+            nextCursor = null;
+        }
+
+        socket.emit(this.answer.good({
+            items,
+            nextCursor,
+            hasMore,
+        }));
     }
 }
 
