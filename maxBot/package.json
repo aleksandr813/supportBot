@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@maxhub/max-bot-api": "^0.2.5",
+    "express": "^5.2.1"
+  },
+  "scripts": {
+    "start": "NODE_TLS_REJECT_UNAUTHORIZED=0 node bot.js"
+  }
+}

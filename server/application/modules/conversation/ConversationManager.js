@@ -124,6 +124,10 @@ class ConversationManager extends BaseManager {
             hasMore,
         }));
     }
+
+    async socketSendMessage(data, socket) {
+        //
+    }
 }
 
 module.exports = ConversationManager;
