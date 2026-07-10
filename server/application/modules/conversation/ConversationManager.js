@@ -22,6 +22,15 @@ class ConversationManager extends BaseManager {
         });
     }
 
+    checkOperatorToken(data, socket) {
+        const { token, guid } = data;
+        if (this.mediator.get(this.TRIGGERS.CHECK_OPERATOR_TOKEN, { token, guid })) {
+            socket.emit(this.answer.bad(302));
+            return false;
+        }
+        return true;
+    }
+
     //EVENTS
     async eventNewMessage(message = {}) {
         const { token, externalId, text } = message;
@@ -71,6 +80,9 @@ class ConversationManager extends BaseManager {
 
     //SOCKET
     async socketGetConversationsList(data, socket) {
+
+        if (!this.checkOperatorToken(data, socket)) return;
+
         const { limit = 20, cursor = null } = data;
 
         const rows = await this.db.getConversationsList(limit + 1, cursor );
@@ -93,6 +105,9 @@ class ConversationManager extends BaseManager {
     }
 
     async socketGetConversationInfo(data, socket) {
+
+        if (!this.checkOperatorToken(data, socket)) return;
+
         const { conversationGuid } = data;
 
         const conversationInfo = await this.db.getConversationInfo(conversationGuid);
@@ -101,6 +116,9 @@ class ConversationManager extends BaseManager {
     }
 
     async socketGetConversationMessages(data, socket) {
+
+        if (!this.checkOperatorToken(data, socket)) return;
+
         const { conversationGuid, limit = 20, cursor = null } = data;
 
         const rows = await this.db.getConversationMessages(conversationGuid, { limit: limit + 1, cursor });
@@ -126,7 +144,7 @@ class ConversationManager extends BaseManager {
     }
 
     async socketSendMessage(data, socket) {
-        //
+        if (!this.checkOperatorToken(data, socket)) return;
     }
 }
 

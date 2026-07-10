@@ -4,12 +4,15 @@ const Operator = require('./Operator');
 const CONFIG = require('../../../config');
 
 const { LOGIN, LOGOUT } = CONFIG.SOCKET;
+const { CHECK_OPERATOR_TOKEN } = CONFIG.MEDIATOR.TRIGGERS;
 
 class OperatorManager extends BaseManager {
     constructor(options) {
         super(options);
 
         this.operators = {};
+
+        this.mediator.set(CHECK_OPERATOR_TOKEN, (data) => this.triggerCheckOperatorToken(data));
 
         if (!this.io) return;
 
@@ -35,6 +38,8 @@ class OperatorManager extends BaseManager {
         return Object.values(this.operators).find(operator => operator.socketId === socketId) || null;
     }
 
+    //SOCKET
+
     async socketLogin(data = {}, socket) {
         const { name, passwordHash } = data;
         if (!name || !passwordHash) {
@@ -54,6 +59,13 @@ class OperatorManager extends BaseManager {
         if (operator.token = token) {
             operator.logout();
         }
+    }
+
+    //TRIGGERS
+
+    triggerCheckOperatorToken({ token, guid }) {
+        if (this.operators[guid].token != token) return false;
+        return true;
     }
 }
 
