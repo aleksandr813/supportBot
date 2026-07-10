@@ -7,7 +7,14 @@ const CONFIG = {
         student: 'Студент',
         employee: 'Работник',
         other: 'Другое',
-    }
+    },
+
+    ERROR_CODES: {
+        USER_ALREADY_EXISTS: 501,
+        ACTIVE_CONVERSATION_EXISTS: 502,
+        PHONE_REQUIRED: 503,
+        ROLE_REQUIRED: 504,
+    },
 };
 
 module.exports = CONFIG;

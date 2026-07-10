@@ -1,10 +1,11 @@
 const MESSAGES = require('../messages');
+const CONFIG = require('../config');
 const SessionStore = require('../services/sessionStore');
 const { phoneKeyboard } = require('../keyboards');
 const { getExternalId, getUsername, getErrorMessage } = require('../utils');
 const { showRoleSelection } = require('../flows');
 
-const USER_ALREADY_EXISTS = 501;
+const { USER_ALREADY_EXISTS } = CONFIG.ERROR_CODES;
 
 function createContactHandler(server) {
     return async function handleContact(ctx) {

@@ -3,9 +3,8 @@ const CONFIG = require('../config');
 const SessionStore = require('../services/sessionStore');
 const { getExternalId, getErrorMessage } = require('../utils');
 
-const { ROLES } = CONFIG;
-
-const ACTIVE_CONVERSATION_EXISTS = 502;
+const { ROLES, ERROR_CODES } = CONFIG;
+const { ACTIVE_CONVERSATION_EXISTS } = ERROR_CODES;
 
 function createRoleHandler(server) {
     return async function handleRoleSelection(ctx) {
