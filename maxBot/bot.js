@@ -1,12 +1,17 @@
 const { Bot } = require('@maxhub/max-bot-api');
 const CONFIG = require('./config');
+const Server = require('./services/Server');
+const createHandlers = require('./handlers');
+
+const server = new Server(CONFIG.HOST);
+
 const {
     handleStart,
     handleContact,
     handleRoleSelection,
     handleClose,
     handleUserMessage,
-} = require('./handlers');
+} = createHandlers(server);
 
 const bot = new Bot(CONFIG.BOT_TOKEN);
 

@@ -1,5 +1,5 @@
 const MESSAGES = require('./messages');
-const SessionStore = require('./sessionStore');
+const SessionStore = require('./services/sessionStore');
 const { phoneKeyboard, roleKeyboard } = require('./keyboards');
 const { getExternalId } = require('./utils');
 

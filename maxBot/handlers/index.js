@@ -1,13 +1,17 @@
 const { handleStart } = require('./start');
-const { handleContact } = require('./contact');
-const { handleRoleSelection } = require('./role');
-const { handleClose } = require('./close');
-const { handleUserMessage } = require('./message');
+const createContactHandler = require('./contact');
+const createRoleHandler = require('./role');
+const createCloseHandler = require('./close');
+const createMessageHandler = require('./message');
 
-module.exports = {
-    handleStart,
-    handleContact,
-    handleRoleSelection,
-    handleClose,
-    handleUserMessage,
-};
+function createHandlers(server) {
+    return {
+        handleStart,
+        handleContact: createContactHandler(server),
+        handleRoleSelection: createRoleHandler(server),
+        handleClose: createCloseHandler(server),
+        handleUserMessage: createMessageHandler(server),
+    };
+}
+
+module.exports = createHandlers;
