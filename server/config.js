@@ -23,6 +23,7 @@ const CONFIG = {
         TRIGGERS: {
             GET_USER: 'GET_USER',
             GET_BOT: 'GET_BOT',
+            CHECK_OPERATOR_TOKEN: 'CHECK_OPERATOR_TOKEN',
         },
     },
 
