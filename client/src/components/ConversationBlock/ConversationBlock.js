@@ -115,7 +115,7 @@ export default function ConversationBlock({
     }, [messageText]);
 
     const handleSend = () => {
-        console.log(messageText);
+        server.sendMessage(messageText, )
         setMessageText('');
     };
 

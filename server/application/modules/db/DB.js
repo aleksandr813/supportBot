@@ -195,6 +195,10 @@ class DB {
         return this.orm.raw(sql, values);
     }
 
+    getUserByConversationGuid(conversationGuid) {
+        return this.orm.get('users', {current_conversation: conversationGuid});
+    }
+
 }
 
 module.exports = DB;

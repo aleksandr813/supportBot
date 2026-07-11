@@ -2,7 +2,7 @@ const BaseManager = require('../BaseManager');
 
 const CONFIG = require('../../../config');
 
-const { GET_CONVERSATIONS, GET_CONVERSATION_INFO, GET_CONVERSATION_MESSAGES } = CONFIG.SOCKET;
+const { GET_CONVERSATIONS, GET_CONVERSATION_INFO, GET_CONVERSATION_MESSAGES, SEND_MESSAGE } = CONFIG.SOCKET;
 
 class ConversationManager extends BaseManager {
     constructor(options) {
@@ -19,6 +19,7 @@ class ConversationManager extends BaseManager {
             socket.on(GET_CONVERSATIONS, (data) => this.socketGetConversationsList(data, socket));
             socket.on(GET_CONVERSATION_INFO, (data) => this.socketGetConversationInfo(data, socket));
             socket.on(GET_CONVERSATION_MESSAGES, (data) => this.socketGetConversationMessages(data, socket));
+            socket.on(SEND_MESSAGE, (data) => this.socketSendMessage(data, socket));
         });
     }
 
@@ -145,9 +146,9 @@ class ConversationManager extends BaseManager {
 
     async socketSendMessage(data, socket) {
         if (!this.checkOperatorToken(data, socket)) return;
-        const
 
-        const { text, externalId, userGuid } = data;
+        const result = await this.mediator.call(this.EVENTS.SEND_MESSAGE, data);
+        socket.emit(result);
     }
 }
 

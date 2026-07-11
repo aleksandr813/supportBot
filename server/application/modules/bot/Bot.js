@@ -1,11 +1,12 @@
 class Bot {
     constructor(options) {
-        const { bot_guid, token, adress, port } = options;
+        const { bot_guid, token, adress, port, callbacks } = options;
 
         this.guid = bot_guid;
         this.token = token;
         this.adress = adress;
         this.port = port;
+        this.callbacks = callbacks || {};
     }
 
     get() {
@@ -17,7 +18,7 @@ class Bot {
         }
     }
 
-    sendMessage(text, externalId) {
+    async sendMessage(text, externalId, conversationGuid, userGuid) {
         const message = {
             text: text,
             externalId: externalId,
@@ -31,8 +32,11 @@ class Bot {
 
         if (response && response?.error) {
             console.log(response.error);
-            //Ошибка отправки сообщения
+            return false;
         }
+
+        this.callbacks.addMessage(text, conversationGuid, userGuid);
+        return true;
     }
 }
 
