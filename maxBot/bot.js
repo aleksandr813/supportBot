@@ -1,9 +1,14 @@
+const express = require('express');
 const { Bot } = require('@maxhub/max-bot-api');
 const CONFIG = require('./config');
 const Server = require('./services/Server');
 const createHandlers = require('./handlers');
+const Router = require('./router/Router');
+const Answer = require('./answer');
 
 const server = new Server(CONFIG.HOST);
+
+const answer = new Answer();
 
 const {
     handleStart,
@@ -39,3 +44,11 @@ bot.on('message_created', async (ctx) => {
 });
 
 bot.start();
+
+const app = express();
+app.use(express.json());
+app.use('/', Router(bot, answer));
+
+const { PORT } = CONFIG;
+
+app.listen(PORT, () => console.log(`Bot HTTP server started at PORT ${PORT}`));

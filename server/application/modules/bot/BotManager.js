@@ -38,7 +38,8 @@ class UserManager extends BaseManager {
         const bot = this.triggerGetBotByUserGuid(userGuid);
         if (!bot) return this.answer.bad(405);
 
-        const user = await this.db.getUserByConversationGuid(conversationGuid);
+        const user = this.mediator.get(GET_USER_BY_CONVERSATION_GUID, conversationGuid);
+        if (!user) return this.answer.bad(503);
         const result = await this.activeBots[bot.token].sendMessage(text, user.external_id, conversationGuid, user.user_guid);
 
         if (!result) return this.answer.bad(406);

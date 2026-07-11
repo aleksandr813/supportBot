@@ -17,6 +17,10 @@ const CONFIG = {
         PHONE_REQUIRED: 503,
         ROLE_REQUIRED: 504,
     },
+
+    URLS: {
+        SEND_MESSAGE: './sendMessage',
+    }
 };
 
 module.exports = CONFIG;

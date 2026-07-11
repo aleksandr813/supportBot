@@ -24,7 +24,7 @@ class Bot {
             externalId: externalId,
         };
 
-        const response = await fetch(`${this.adress}:${this.port}`, {
+        const response = await fetch(`${this.adress}:${this.port}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token: this.token, ...message }),

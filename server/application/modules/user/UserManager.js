@@ -10,6 +10,7 @@ class UserManager extends BaseManager {
         this.mediator.subscribe(this.EVENTS.SET_USER_CONVERSATION, (data) => this.eventSetUserConversation(data));
         this.mediator.subscribe(this.EVENTS.ADD_USER, (user) => this.eventCreateUser(user));
         this.mediator.set(this.TRIGGERS.GET_USER, (user) => this.triggerGetUser(user));
+        this.mediator.set(this.TRIGGERS.GET_USER_BY_CONVERSATION_GUID, (data) => this.triggerGetUserByConversationGuid(data));
     }
 
     addUser(externalId, userGuid, botGuid, username, currentConversation = '') { //Добавляет только как активную запись!
@@ -69,6 +70,16 @@ class UserManager extends BaseManager {
         const userData = await this.db.getUser(externalId, botGuid);
         if (userData) return this.loadUser(userData).get();
         return false;
+    }
+
+    async triggerGetUserByConversationGuid(conversationGuid) {
+        const activeUser = Object.values(this.user).find(user => user.currentConversation === conversationGuid) || null;
+        if (activeUser) return user;
+        const rawUser = await this.db.getUserByConversationGuid(conversationGuid);
+        if (!rawUser) return null;
+        const user = this.triggerGetUser({externalId: rawUser.externalId, botGuid: rawUser.bot_guid});
+        if (!user) return null;
+        return user;
     }
 }
 
