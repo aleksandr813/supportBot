@@ -25,7 +25,7 @@ class ConversationManager extends BaseManager {
 
     checkOperatorToken(data, socket) {
         const { token, guid } = data;
-        if (this.mediator.get(this.TRIGGERS.CHECK_OPERATOR_TOKEN, { token, guid })) {
+        if (!this.mediator.get(this.TRIGGERS.CHECK_OPERATOR_TOKEN, { token, guid })) {
             socket.emit(this.answer.bad(302));
             return false;
         }

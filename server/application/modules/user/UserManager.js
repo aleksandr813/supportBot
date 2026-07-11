@@ -73,7 +73,7 @@ class UserManager extends BaseManager {
     }
 
     async triggerGetUserByConversationGuid(conversationGuid) {
-        const activeUser = Object.values(this.user).find(user => user.currentConversation === conversationGuid) || null;
+        const activeUser = Object.values(this.activeUsers).find(user => user.currentConversation === conversationGuid) || null;
         if (activeUser) return user;
         const rawUser = await this.db.getUserByConversationGuid(conversationGuid);
         if (!rawUser) return null;

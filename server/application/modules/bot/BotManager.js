@@ -35,11 +35,13 @@ class UserManager extends BaseManager {
     //EVENTS
     
     async eventSendMessage(text, conversationGuid) {
-        const bot = this.triggerGetBotByUserGuid(userGuid);
+        
+        const user = this.mediator.get(this.TRIGGERS.GET_USER_BY_CONVERSATION_GUID, conversationGuid);
+        if (!user) return this.answer.bad(503);
+
+        const bot = this.triggerGetBotByUserGuid(user.userGuid);
         if (!bot) return this.answer.bad(405);
 
-        const user = this.mediator.get(GET_USER_BY_CONVERSATION_GUID, conversationGuid);
-        if (!user) return this.answer.bad(503);
         const result = await this.activeBots[bot.token].sendMessage(text, user.external_id, conversationGuid, user.user_guid);
 
         if (!result) return this.answer.bad(406);
