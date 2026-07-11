@@ -8,7 +8,8 @@ class UserManager extends BaseManager {
         this.activeBots = {};
         this.loadBots();
 
-        this.mediator.set(this.TRIGGERS.GET_BOT, (data) => this.triggerGetBotByToken(data));
+        this.mediator.set(this.TRIGGERS.GET_BOT_BY_TOKEN, (data) => this.triggerGetBotByToken(data));
+        this.mediator.set(this.TRIGGERS.GET_BOT_BY_USER_GUID, (data) => this.triggerGetBotByUserGuid(data));
     }
 
     
@@ -29,6 +30,10 @@ class UserManager extends BaseManager {
             return this.activeBots[token];
         }
         return false;
+    }
+
+    triggerGetBotByUserGuid(guid) {
+        return Object.values(this.activeBots).find(bot => bot.guid === guid) || null;
     }
 }
 

@@ -36,7 +36,7 @@ class ConversationManager extends BaseManager {
         const { token, externalId, text } = message;
         const date = new Date().toISOString();
 
-        const botGuid = this.mediator.get(this.TRIGGERS.GET_BOT, token).guid;
+        const botGuid = this.mediator.get(this.TRIGGERS.GET_BOT_BY_TOKEN, token).guid;
 
         const user = await this.mediator.get(this.TRIGGERS.GET_USER, {externalId, botGuid});
         //console.log(user);
@@ -50,7 +50,7 @@ class ConversationManager extends BaseManager {
 
     async eventCreateConversation(data) {
         const { token, externalId, role } = data;
-        const botGuid = this.mediator.get(this.TRIGGERS.GET_BOT, token).guid;
+        const botGuid = this.mediator.get(this.TRIGGERS.GET_BOT_BY_TOKEN, token).guid;
         const conversationGuid = this.common.guid();
         const date = new Date().toISOString();
 
@@ -66,7 +66,7 @@ class ConversationManager extends BaseManager {
 
     async eventEndConversation(data) {
         const { token, externalId } = data;
-        const botGuid = this.mediator.get(this.TRIGGERS.GET_BOT, token).guid;
+        const botGuid = this.mediator.get(this.TRIGGERS.GET_BOT_BY_TOKEN, token).guid;
 
         const user = await this.mediator.get(this.TRIGGERS.GET_USER, {externalId, botGuid});
         if (!user) return this.answer.bad(503);
@@ -145,6 +145,9 @@ class ConversationManager extends BaseManager {
 
     async socketSendMessage(data, socket) {
         if (!this.checkOperatorToken(data, socket)) return;
+        const
+
+        const { text, externalId, userGuid } = data;
     }
 }
 

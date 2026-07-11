@@ -45,7 +45,7 @@ class UserManager extends BaseManager {
     //EVENTS
     async eventCreateUser(user) {
         const { token, externalId, username, phone } = user;
-        const botGuid = this.mediator.get(this.TRIGGERS.GET_BOT, token).guid;
+        const botGuid = this.mediator.get(this.TRIGGERS.GET_BOT_BY_TOKEN, token).guid;
         const userGuid = this.common.guid();
         if (await this.isUserAlreadyExist(externalId, botGuid)) return this.answer.bad(501);
         this.db.createUser(userGuid, externalId, botGuid, username);

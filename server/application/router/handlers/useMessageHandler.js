@@ -8,8 +8,8 @@ module.exports = (answer, mediator) => {
             text,
         } = req.body;
 
-        const { GET_BOT } = mediator.getTriggerTypes();
-        if (!message.token || !mediator.get(GET_BOT, message.token)) {
+        const { GET_BOT_BY_TOKEN } = mediator.getTriggerTypes();
+        if (!message.token || !mediator.get(GET_BOT_BY_TOKEN, message.token)) {
             return res.send(answer.bad(403));
         }
 

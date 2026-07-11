@@ -9,8 +9,8 @@ module.exports = (answer, mediator) => {
             phone
         } = req.body;
 
-        const { GET_BOT } = mediator.getTriggerTypes();
-        if (!user.token || !mediator.get(GET_BOT, user.token)) {
+        const { GET_BOT_BY_TOKEN } = mediator.getTriggerTypes();
+        if (!user.token || !mediator.get(GET_BOT_BY_TOKEN, user.token)) {
             return res.send(answer.bad(403));
         }
 

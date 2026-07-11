@@ -22,7 +22,8 @@ const CONFIG = {
         },
         TRIGGERS: {
             GET_USER: 'GET_USER',
-            GET_BOT: 'GET_BOT',
+            GET_BOT_BY_TOKEN: 'GET_BOT_BY_TOKEN',
+            GET_BOT_BY_USER_GUID: 'GET_BOT_BY_USER_GUID',
             CHECK_OPERATOR_TOKEN: 'CHECK_OPERATOR_TOKEN',
         },
     },
