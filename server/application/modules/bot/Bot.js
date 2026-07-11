@@ -18,25 +18,37 @@ class Bot {
         }
     }
 
+    getBaseUrl() {
+        const host = /^https?:\/\//i.test(this.adress) ? this.adress : `http://${this.adress}`;
+        return `${host}:${this.port}`;
+    }
+
     async sendMessage(text, externalId, conversationGuid, userGuid) {
         const message = {
             text: text,
             externalId: externalId,
         };
 
-        const response = await fetch(`${this.adress}:${this.port}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: this.token, ...message }),
-        });
+        try {
+            const response = await fetch(`${this.getBaseUrl()}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: this.token, ...message }),
+            });
 
-        if (response && response?.error) {
-            console.log(response.error);
+            const data = await response.json();
+
+            if (data?.result === 'error') {
+                console.log(data.error);
+                return false;
+            }
+
+            this.callbacks.addMessage(text, conversationGuid, userGuid);
+            return true;
+        } catch (error) {
+            console.error(`Failed to send message to bot at ${this.getBaseUrl()}:`, error.message);
             return false;
         }
-
-        this.callbacks.addMessage(text, conversationGuid, userGuid);
-        return true;
     }
 }
 

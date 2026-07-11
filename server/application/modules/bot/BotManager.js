@@ -19,7 +19,9 @@ class UserManager extends BaseManager {
         const bots = await this.db.getBots();
         bots.forEach(bot => { 
             this.activeBots[bot.token] = new Bot({ ...bot, 
-                callbacks: (data) => this.addMessage(data),
+                callbacks: {
+                    addMessage: (text, conversationGuid, userGuid) => this.addMessage(text, userGuid, conversationGuid),
+                },
              }); 
         });
         console.log("Получены боты: \n", this.activeBots);
@@ -34,15 +36,16 @@ class UserManager extends BaseManager {
     
     //EVENTS
     
-    async eventSendMessage(text, conversationGuid) {
-        
-        const user = this.mediator.get(this.TRIGGERS.GET_USER_BY_CONVERSATION_GUID, conversationGuid);
+    async eventSendMessage(data) {
+        const { text, conversationGuid } = data;
+
+        const user = await this.mediator.get(this.TRIGGERS.GET_USER_BY_CONVERSATION_GUID, conversationGuid);
         if (!user) return this.answer.bad(503);
 
-        const bot = this.triggerGetBotByUserGuid(user.userGuid);
+        const bot = this.triggerGetBotByUserGuid(user.botGuid);
         if (!bot) return this.answer.bad(405);
 
-        const result = await this.activeBots[bot.token].sendMessage(text, user.external_id, conversationGuid, user.user_guid);
+        const result = await this.activeBots[bot.token].sendMessage(text, user.externalId, conversationGuid, user.userGuid);
 
         if (!result) return this.answer.bad(406);
         return this.answer.good(true);

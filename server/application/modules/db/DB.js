@@ -15,6 +15,8 @@ class DB {
                 CREATE TABLE IF NOT EXISTS "bots" (
                     "bot_guid" TEXT NOT NULL UNIQUE,
                     "token" TEXT UNIQUE,
+                    "adress" TEXT DEFAULT 'localhost',
+                    "port" INTEGER DEFAULT 3004,
                     PRIMARY KEY("bot_guid")
                 )
             `);

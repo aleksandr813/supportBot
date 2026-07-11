@@ -148,7 +148,7 @@ class ConversationManager extends BaseManager {
         if (!this.checkOperatorToken(data, socket)) return;
 
         const result = await this.mediator.call(this.EVENTS.SEND_MESSAGE, data);
-        socket.emit(result);
+        socket.emit(SEND_MESSAGE, result);
     }
 }
 

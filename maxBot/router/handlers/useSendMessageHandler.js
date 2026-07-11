@@ -4,7 +4,7 @@ module.exports = (bot, answer) => {
     return async (req, res) => {
         const { token, externalId, text } = req.body || {};
 
-        if (!token || token !== CONFIG.BOT_TOKEN) {
+        if (!token || token !== CONFIG.SERVER_TOKEN) {
             return res.send(answer.bad(243));
         }
 
