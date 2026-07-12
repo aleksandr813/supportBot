@@ -28,10 +28,8 @@ class UserManager extends BaseManager {
     }
 
     addMessage(text, userGuid, conversationGuid) {
-
         const date = new Date().toISOString();
-
-        this.db.addMessage(text, conversationGuid, 'operator', date);
+        this.db.addMessage(text, conversationGuid, userGuid, 'operator', date);
     }
     
     //EVENTS

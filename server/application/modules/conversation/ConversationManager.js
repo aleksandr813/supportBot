@@ -44,7 +44,7 @@ class ConversationManager extends BaseManager {
         if (!user) return this.answer.bad(503);
         if (!user.currentConversation) return this.answer.bad(504);
 
-        await this.db.addMessage(text, user.currentConversation, user.userGuid , date);
+        await this.db.addMessage(text, user.currentConversation, user.userGuid, 'user', date);
 
         return this.answer.good(true);
     }

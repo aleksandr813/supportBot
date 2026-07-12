@@ -144,7 +144,7 @@ export default function ConversationBlock({
                         key={msg.message_id}
                         text={msg.text}
                         date={msg.date}
-                        isOutgoing={msg.external_id === null}
+                        isOutgoing={msg.sender === 'operator'}
                     />
                 ))}
             </div>

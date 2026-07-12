@@ -54,10 +54,21 @@ class DB {
                     "text" TEXT NOT NULL,
                     "conversation_guid" TEXT NOT NULL,
                     "user_guid" TEXT NOT NULL,
+                    "sender" TEXT NOT NULL DEFAULT 'user', -- 'user' | 'operator'
                     "date" TEXT NOT NULL,
                     PRIMARY KEY("message_id" AUTOINCREMENT),
                     FOREIGN KEY("conversation_guid") REFERENCES "conversations"("conversation_guid"),
                     FOREIGN KEY("user_guid") REFERENCES "users"("user_guid")
+                )
+            `);
+
+            this.db.run(`
+                CREATE TABLE IF NOT EXISTS "operators" (
+                    "operator_guid" TEXT NOT NULL UNIQUE,
+                    "name" TEXT NOT NULL UNIQUE,
+                    "password_hash" TEXT NOT NULL,
+                    "token" TEXT UNIQUE,
+                    PRIMARY KEY("operator_guid")
                 )
             `);
 
@@ -111,17 +122,15 @@ class DB {
         );
     }
 
-    addMessage(text, conversationGuid, userGuid, date) {
-        this.orm.update('conversations', 
-            { last_date: date },
-            { conversation_guid: conversationGuid },
-        );
+    addMessage(text, conversationGuid, userGuid, sender, date) {
+        this.orm.update('conversations', { last_date: date }, { conversation_guid: conversationGuid });
 
         return this.orm.insert('messages', {
-            text: text,
+            text,
             conversation_guid: conversationGuid,
             user_guid: userGuid,
-            date: date,
+            sender,
+            date,
         });
     }
 
@@ -179,9 +188,8 @@ class DB {
                 m.message_id,
                 m.text,
                 m.date,
-                u.external_id
+                m.sender
             FROM messages m
-            JOIN users u ON m.user_guid = u.user_guid
             WHERE m.conversation_guid = ?
         `;
         const values = [conversationGuid];
