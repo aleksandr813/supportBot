@@ -205,6 +205,10 @@ class DB {
         return this.orm.raw(sql, values);
     }
 
+    getLastMessage(conversationGuid) {
+        return this.orm.get('messages', { conversation_guid: conversationGuid }, { order: 'message_id DESC' })
+    }
+
     getUserByConversationGuid(conversationGuid) {
         return this.orm.get('users', {current_conversation: conversationGuid});
     }

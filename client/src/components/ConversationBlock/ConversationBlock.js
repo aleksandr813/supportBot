@@ -80,6 +80,23 @@ export default function ConversationBlock({
     }, [conversationGuid]);
 
     useEffect(() => {
+        if (!mediator) return;
+        const { NEW_MESSAGE } = mediator.getEventTypes();
+
+        const handleNewMessage = (data) => {
+            if (data.conversationGuid !== conversationGuid) return;
+
+            setMessages(prev => {
+                if (prev.some(m => m.message_id === data.message.message_id)) return prev;
+                return [data.message, ...prev];
+            });
+        };
+
+        mediator.subscribe(NEW_MESSAGE, handleNewMessage);
+        return () => mediator.unsubscribe(NEW_MESSAGE, handleNewMessage);
+    }, [conversationGuid]);
+
+    useEffect(() => {
         const container = containerRef.current;
         if (!container) return;
 

@@ -27,9 +27,9 @@ class UserManager extends BaseManager {
         console.log("Получены боты: \n", this.activeBots);
     }
 
-    addMessage(text, userGuid, conversationGuid) {
+    async addMessage(text, userGuid, conversationGuid) {
         const date = new Date().toISOString();
-        this.db.addMessage(text, conversationGuid, userGuid, 'operator', date);
+        await this.db.addMessage(text, conversationGuid, userGuid, 'operator', date);
     }
     
     //EVENTS

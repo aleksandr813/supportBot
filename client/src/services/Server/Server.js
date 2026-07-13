@@ -2,7 +2,15 @@ import { io, Socket } from "socket.io-client";
 import CONFIG from "../../config";
 
 const { HOST } = CONFIG;
-const { LOGIN, LOGOUT, GET_CONVERSATIONS, GET_CONVERSATION_MESSAGES, GET_CONVERSATION_INFO, SEND_MESSAGE } = CONFIG.SOCKET;
+const { 
+    LOGIN, 
+    LOGOUT, 
+    GET_CONVERSATIONS, 
+    GET_CONVERSATION_MESSAGES, 
+    GET_CONVERSATION_INFO, 
+    SEND_MESSAGE, 
+    NEW_MESSAGE 
+} = CONFIG.SOCKET;
 
 class Server {
     constructor(mediator, store) {
@@ -21,6 +29,7 @@ class Server {
             this.socket.on(GET_CONVERSATION_MESSAGES, (data) => this.handleGetConversationMessages(data));
             this.socket.on(GET_CONVERSATION_INFO, (data) => this.handleGetConversationInfo(data));
             this.socket.on(SEND_MESSAGE, (data) => this.handleSendMessage(data));
+            this.socket.on(NEW_MESSAGE, (data) => this.handleNewMessage(data));
         });
     }
 
@@ -82,6 +91,10 @@ class Server {
 
     handleSendMessage(response) {
         this.mediator.call(SEND_MESSAGE, response.data);
+    }
+
+    handleNewMessage(response) {
+        this.mediator.call(NEW_MESSAGE, response.data);
     }
 
 }

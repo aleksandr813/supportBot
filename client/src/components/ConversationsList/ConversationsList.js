@@ -62,6 +62,30 @@ export default function ConversationsList({
     }, [mediator, server]);
 
     useEffect(() => {
+        if (!mediator) return;
+        const { NEW_MESSAGE } = mediator.getEventTypes();
+
+        const handleNewMessage = (data) => {
+            setConversations(prev => {
+                const idx = prev.findIndex(c => c.conversation_guid === data.conversationGuid);
+                if (idx === -1) return prev;
+
+                const updated = {
+                    ...prev[idx],
+                    last_message: data.message.text,
+                    last_date: data.message.date,
+                };
+
+                const rest = prev.filter((_, i) => i !== idx);
+                return [updated, ...rest];
+            });
+        };
+
+        mediator.subscribe(NEW_MESSAGE, handleNewMessage);
+        return () => mediator.unsubscribe(NEW_MESSAGE, handleNewMessage);
+    }, []);
+
+    useEffect(() => {
         const container = containerRef.current;
         if (!container) return;
 

@@ -27,12 +27,14 @@ class Mediator {
     }
 
     call(name, data) {
-        if (this.events[name]) {
-            const event = this.events[name][0];
-            if (event instanceof Function) {
-                return event(data);
+        if (!this.events[name]) return;
+
+        const results = this.events[name].map(fn => {
+            if (fn instanceof Function) {
+                return fn(data);
             }
-        }
+        });
+        return results[0];
     }
 
     unsubscribe(name, _func) {

@@ -2,7 +2,7 @@ const BaseManager = require('../BaseManager');
 
 const CONFIG = require('../../../config');
 
-const { GET_CONVERSATIONS, GET_CONVERSATION_INFO, GET_CONVERSATION_MESSAGES, SEND_MESSAGE } = CONFIG.SOCKET;
+const { GET_CONVERSATIONS, GET_CONVERSATION_INFO, GET_CONVERSATION_MESSAGES, SEND_MESSAGE, NEW_MESSAGE } = CONFIG.SOCKET;
 
 class ConversationManager extends BaseManager {
     constructor(options) {
@@ -32,6 +32,15 @@ class ConversationManager extends BaseManager {
         return true;
     }
 
+    async notifyAboutNewMessage(conversationGuid) {
+        const _message = await this.db.getLastMessage(conversationGuid);
+
+        this.io.emit(NEW_MESSAGE, this.answer.good({
+            conversationGuid: _message.conversation_guid,
+            message: _message,
+        }));
+    }
+
     //EVENTS
     async eventNewMessage(message = {}) {
         const { token, externalId, text } = message;
@@ -45,6 +54,8 @@ class ConversationManager extends BaseManager {
         if (!user.currentConversation) return this.answer.bad(504);
 
         await this.db.addMessage(text, user.currentConversation, user.userGuid, 'user', date);
+
+        await this.notifyAboutNewMessage(user.currentConversation);
 
         return this.answer.good(true);
     }
@@ -149,6 +160,8 @@ class ConversationManager extends BaseManager {
 
         const result = await this.mediator.call(this.EVENTS.SEND_MESSAGE, data);
         socket.emit(SEND_MESSAGE, result);
+        
+        await this.notifyAboutNewMessage(data.conversationGuid);
     }
 }
 
