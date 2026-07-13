@@ -17,14 +17,27 @@ export default function ConversationsList({
     const isLoadingRef = useRef(false);
     const cursorRef = useRef(null);
 
+    const requestCursorRef = useRef(null);
+
     const loadMore = useCallback(() => {
         if (isLoadingRef.current || !hasMore) return;
 
+        requestCursorRef.current = cursorRef.current;
         isLoadingRef.current = true;
         setIsLoading(true);
 
         server.getConversations({ cursor: cursorRef.current, limit: 20 });
     }, [hasMore]);
+
+    const refreshLatest = useCallback(() => {
+        if (isLoadingRef.current) return;
+
+        requestCursorRef.current = null;
+        isLoadingRef.current = true;
+        setIsLoading(true);
+
+        server.getConversations({ limit: 20 });
+    }, []);
 
     useEffect(() => {
         if (!mediator) return;
@@ -33,14 +46,12 @@ export default function ConversationsList({
 
         const handleConversations = (data) => {
             setConversations(prev => {
-                const isFirstLoad = prev.length === 0;
-                const combined = isFirstLoad ? data.items : [...prev, ...data.items];
+                const isFirstPage = requestCursorRef.current === null;
+                const combined = isFirstPage ? [...data.items, ...prev] : [...prev, ...data.items];
 
-                const uniqueConversations = Array.from(
+                return Array.from(
                     new Map(combined.map(item => [item.conversation_guid, item])).values()
                 );
-
-                return uniqueConversations;
             });
 
             cursorRef.current = data.nextCursor;
@@ -52,13 +63,12 @@ export default function ConversationsList({
 
         mediator.subscribe(GET_CONVERSATIONS, handleConversations);
 
-        setIsLoading(true);
+        requestCursorRef.current = null;
         isLoadingRef.current = true;
+        setIsLoading(true);
         server.getConversations({ limit: 20 });
 
-        return () => {
-            mediator.unsubscribe(GET_CONVERSATIONS, handleConversations);
-        }
+        return () => mediator.unsubscribe(GET_CONVERSATIONS, handleConversations);
     }, []);
 
     useEffect(() => {
@@ -68,7 +78,11 @@ export default function ConversationsList({
         const handleNewMessage = (data) => {
             setConversations(prev => {
                 const idx = prev.findIndex(c => c.conversation_guid === data.conversationGuid);
-                if (idx === -1) return prev;
+
+                if (idx === -1) {
+                    refreshLatest();
+                    return prev;
+                }
 
                 const updated = {
                     ...prev[idx],
@@ -83,7 +97,7 @@ export default function ConversationsList({
 
         mediator.subscribe(NEW_MESSAGE, handleNewMessage);
         return () => mediator.unsubscribe(NEW_MESSAGE, handleNewMessage);
-    }, []);
+    }, [refreshLatest]);
 
     useEffect(() => {
         const container = containerRef.current;
