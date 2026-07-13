@@ -1,8 +1,12 @@
-import React, { useEffect, useRef, useState, useLayoutEffect } from 'react';
+import React, { useEffect, useRef, useState, useMemo, useLayoutEffect, useCallback } from 'react';
 import Message from '../Message/Message';
 import ConversationHeader from '../ConversationHeader/ConversationHeader';
 
 import './ConversationBlock.css';
+
+function generateTempId() {
+    return `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
 
 export default function ConversationBlock({
     conversationGuid,
@@ -20,80 +24,94 @@ export default function ConversationBlock({
 
     const isLoadingRef = useRef(false);
     const cursorRef = useRef(null);
+    const pendingHistoryScrollRef = useRef(false);
 
-    const loadMore = (cursor, currentHasMore, currentGuid) => {
-        if (isLoadingRef.current || !currentHasMore) return;
+    const orderedMessages = useMemo(() => messages.slice().reverse(), [messages]);
 
-        const container = containerRef.current;
-        if (container) prevScrollHeightRef.current = container.scrollHeight;
+    const loadMore = useCallback(() => {
+        if (isLoadingRef.current || !hasMore) return;
+
+        if (containerRef.current) {
+            prevScrollHeightRef.current = containerRef.current.scrollHeight;
+        }
 
         isLoadingRef.current = true;
         setIsLoading(true);
 
-        server.getConversationMessages({ 
-            conversationGuid: currentGuid, 
-            cursor, 
-            limit: 20 
+        server.getConversationMessages({
+            conversationGuid,
+            cursor: cursorRef.current,
+            limit: 20,
         });
-    };
+    }, [conversationGuid, hasMore]);
 
     useEffect(() => {
         if (!mediator) return;
 
-        const { GET_CONVERSATION_MESSAGES } = mediator.getEventTypes();
+        const { GET_CONVERSATION_MESSAGES, NEW_MESSAGE, SEND_MESSAGE } = mediator.getEventTypes();
 
         setMessages([]);
         setHasMore(true);
         cursorRef.current = null;
         prevScrollHeightRef.current = 0;
+        pendingHistoryScrollRef.current = false;
 
-        const handleMessages = (data) => {
+        const handleHistory = (data) => {
             if (data.conversationGuid !== undefined && data.conversationGuid !== conversationGuid) return;
 
+            pendingHistoryScrollRef.current = true;
             setMessages(prev => {
-                const isFirstLoad = prev.length === 0;
-                const combined = isFirstLoad ? data.items : [...prev, ...data.items];
-
-                const uniqueMessages = Array.from(
-                    new Map(combined.map(item => [item.message_id, item])).values()
-                );
-
-                return uniqueMessages;
+                const combined = [...prev, ...data.items];
+                return Array.from(new Map(combined.map(item => [item.message_id, item])).values());
             });
 
             cursorRef.current = data.nextCursor;
             setHasMore(data.hasMore);
-
             setIsLoading(false);
             isLoadingRef.current = false;
         };
-
-        mediator.subscribe(GET_CONVERSATION_MESSAGES, handleMessages);
-
-        setIsLoading(true);
-        isLoadingRef.current = true;
-        server.getConversationMessages({ conversationGuid, limit: 20 });
-
-        return () => {
-            mediator.unsubscribe(GET_CONVERSATION_MESSAGES, handleMessages);
-        };
-    }, [conversationGuid]);
-
-    useEffect(() => {
-        if (!mediator) return;
-        const { NEW_MESSAGE } = mediator.getEventTypes();
 
         const handleNewMessage = (data) => {
             if (data.conversationGuid !== conversationGuid) return;
 
             setMessages(prev => {
                 if (prev.some(m => m.message_id === data.message.message_id)) return prev;
+
+                if (data.tempId) {
+                    const idx = prev.findIndex(m => m.message_id === data.tempId);
+                    if (idx !== -1) {
+                        const updated = [...prev];
+                        updated[idx] = { ...data.message, status: 'sent' };
+                        return updated;
+                    }
+                }
+
                 return [data.message, ...prev];
             });
         };
 
+        const handleSendAck = (data) => {
+            const { tempId, success } = data || {};
+            if (!tempId || success) return;
+
+            setMessages(prev => prev.map(m => (
+                m.message_id === tempId ? { ...m, status: 'error' } : m
+            )));
+        };
+
+        mediator.subscribe(GET_CONVERSATION_MESSAGES, handleHistory);
         mediator.subscribe(NEW_MESSAGE, handleNewMessage);
-        return () => mediator.unsubscribe(NEW_MESSAGE, handleNewMessage);
+        mediator.subscribe(SEND_MESSAGE, handleSendAck);
+
+        setIsLoading(true);
+        isLoadingRef.current = true;
+        server.getConversationMessages({ conversationGuid, limit: 20 });
+
+        return () => {
+            mediator.unsubscribe(GET_CONVERSATION_MESSAGES, handleHistory);
+            mediator.unsubscribe(NEW_MESSAGE, handleNewMessage);
+            mediator.unsubscribe(SEND_MESSAGE, handleSendAck);
+        };
     }, [conversationGuid]);
 
     useEffect(() => {
@@ -102,22 +120,21 @@ export default function ConversationBlock({
 
         const handleScroll = () => {
             if (container.scrollHeight <= container.clientHeight) return;
-            if (container.scrollTop <= 50) {
-                loadMore(cursorRef.current, hasMore, conversationGuid);
-            }
+            if (container.scrollTop <= 50) loadMore();
         };
 
         container.addEventListener('scroll', handleScroll);
         return () => container.removeEventListener('scroll', handleScroll);
-    }, []); 
+    }, [loadMore]);
 
     useLayoutEffect(() => {
         const container = containerRef.current;
         if (!container) return;
 
-        if (prevScrollHeightRef.current) {
+        if (pendingHistoryScrollRef.current) {
             container.scrollTop = container.scrollHeight - prevScrollHeightRef.current;
             prevScrollHeightRef.current = 0;
+            pendingHistoryScrollRef.current = false;
         } else {
             container.scrollTop = container.scrollHeight;
         }
@@ -126,14 +143,35 @@ export default function ConversationBlock({
     useLayoutEffect(() => {
         const textarea = textareaRef.current;
         if (!textarea) return;
-
         textarea.style.height = 'auto';
         textarea.style.height = `${textarea.scrollHeight}px`;
     }, [messageText]);
 
     const handleSend = () => {
-        server.sendMessage({ text: messageText, conversationGuid })
+        const text = messageText.trim();
+        if (!text) return;
+
+        const tempId = generateTempId();
+
+        const optimisticMessage = {
+            message_id: tempId,
+            text,
+            date: new Date().toISOString(),
+            sender: 'operator',
+            status: 'sending',
+        };
+
+        setMessages(prev => [optimisticMessage, ...prev]);
         setMessageText('');
+
+        server.sendMessage({ text, conversationGuid, tempId });
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+        }
     };
 
     return (
@@ -156,12 +194,13 @@ export default function ConversationBlock({
                     </div>
                 )}
 
-                {messages.slice().reverse().map((msg) => (
+                {orderedMessages.map((msg) => (
                     <Message
                         key={msg.message_id}
                         text={msg.text}
                         date={msg.date}
                         isOutgoing={msg.sender === 'operator'}
+                        status={msg.status}
                     />
                 ))}
             </div>
@@ -173,6 +212,7 @@ export default function ConversationBlock({
                     className="conversation-block__input"
                     value={messageText}
                     onChange={(e) => setMessageText(e.target.value)}
+                    onKeyDown={handleKeyDown}
                     placeholder="Введите сообщение..."
                 />
                 <button

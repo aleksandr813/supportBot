@@ -29,7 +29,7 @@ class UserManager extends BaseManager {
 
     async addMessage(text, userGuid, conversationGuid) {
         const date = new Date().toISOString();
-        await this.db.addMessage(text, conversationGuid, userGuid, 'operator', date);
+        return this.db.addMessage(text, conversationGuid, userGuid, 'operator', date);
     }
     
     //EVENTS

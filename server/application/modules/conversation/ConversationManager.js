@@ -32,12 +32,13 @@ class ConversationManager extends BaseManager {
         return true;
     }
 
-    async notifyAboutNewMessage(conversationGuid) {
+    async notifyAboutNewMessage(conversationGuid, tempId = null) {
         const _message = await this.db.getLastMessage(conversationGuid);
 
         this.io.emit(NEW_MESSAGE, this.answer.good({
             conversationGuid: _message.conversation_guid,
             message: _message,
+            tempId,
         }));
     }
 
@@ -158,10 +159,21 @@ class ConversationManager extends BaseManager {
     async socketSendMessage(data, socket) {
         if (!this.checkOperatorToken(data, socket)) return;
 
+        const { tempId = null } = data;
+
         const result = await this.mediator.call(this.EVENTS.SEND_MESSAGE, data);
-        socket.emit(SEND_MESSAGE, result);
-        
-        await this.notifyAboutNewMessage(data.conversationGuid);
+
+        const success = result?.result === 'ok';
+
+        socket.emit(SEND_MESSAGE, this.answer.good({
+            success,
+            tempId,
+            error: success ? null : result?.error,
+        }));
+
+        if (success) {
+            await this.notifyAboutNewMessage(data.conversationGuid, tempId);
+        }
     }
 }
 

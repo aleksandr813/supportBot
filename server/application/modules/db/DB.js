@@ -122,8 +122,8 @@ class DB {
         );
     }
 
-    addMessage(text, conversationGuid, userGuid, sender, date) {
-        this.orm.update('conversations', { last_date: date }, { conversation_guid: conversationGuid });
+    async addMessage(text, conversationGuid, userGuid, sender, date) {
+        await this.orm.update('conversations', { last_date: date }, { conversation_guid: conversationGuid });
 
         return this.orm.insert('messages', {
             text,

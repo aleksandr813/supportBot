@@ -43,7 +43,7 @@ class Bot {
                 return false;
             }
 
-            this.callbacks.addMessage(text, conversationGuid, userGuid);
+            await this.callbacks.addMessage(text, conversationGuid, userGuid);
             return true;
         } catch (error) {
             console.error(`Failed to send message to bot at ${this.getBaseUrl()}:`, error.message);

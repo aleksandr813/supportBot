@@ -24,7 +24,7 @@ export default function ConversationsList({
         setIsLoading(true);
 
         server.getConversations({ cursor: cursorRef.current, limit: 20 });
-    }, [hasMore, server]);
+    }, [hasMore]);
 
     useEffect(() => {
         if (!mediator) return;
@@ -59,7 +59,7 @@ export default function ConversationsList({
         return () => {
             mediator.unsubscribe(GET_CONVERSATIONS, handleConversations);
         }
-    }, [mediator, server]);
+    }, []);
 
     useEffect(() => {
         if (!mediator) return;

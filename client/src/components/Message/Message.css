@@ -1,6 +1,7 @@
 .message {
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     gap: 4px;
     padding: 10px 14px;
     margin: 4px 12px;
@@ -11,6 +12,7 @@
 
 .message--outgoing {
     align-self: flex-end;
+    align-items: flex-start;
     background: #4aa5ae;
 }
 
@@ -24,10 +26,32 @@
     color: #1f2a2c;
     white-space: pre-wrap;
     word-break: break-word;
+    text-align: left;
+    align-self: stretch;
+}
+
+.message__footer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    align-self: flex-end;
 }
 
 .message__date {
-    align-self: flex-end;
     font-size: 11px;
     color: #7c8b8d;
+}
+
+.message__status {
+    font-size: 12px;
+    line-height: 1;
+    cursor: default;
+}
+
+.message__status--sending {
+    opacity: 0.7;
+}
+
+.message__status--error {
+    color: #e04b4b;
 }
