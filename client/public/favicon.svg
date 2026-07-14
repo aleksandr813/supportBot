@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <!-- Squircle Background with teal gradient -->
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#65c5d0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#388a92;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="128" fill="url(#grad)" />
+  
+  <!-- Robot Head / Chat Bubble Shape -->
+  <!-- Cute robot ears / antenna -->
+  <rect x="236" y="80" width="40" height="60" rx="20" fill="#ffffff" />
+  <circle cx="256" cy="80" r="30" fill="#ffffff" />
+  
+  <!-- Robot Head (Main) -->
+  <rect x="128" y="130" width="256" height="220" rx="80" fill="#ffffff" />
+  
+  <!-- Headphones / Ears -->
+  <rect x="96" y="200" width="32" height="80" rx="16" fill="#388a92" />
+  <rect x="384" y="200" width="32" height="80" rx="16" fill="#388a92" />
+  <path d="M112 200 C 112 110, 400 110, 400 200" fill="none" stroke="#388a92" stroke-width="20" stroke-linecap="round" />
+  
+  <!-- Robot Eyes (Glowing screen or simple eyes) -->
+  <rect x="176" y="200" width="160" height="70" rx="35" fill="#20232a" />
+  <!-- Glowing eyes inside screen -->
+  <circle cx="216" cy="235" r="18" fill="#4aa5ae" />
+  <circle cx="296" cy="235" r="18" fill="#4aa5ae" />
+  
+  <!-- Cute Smile -->
+  <path d="M236 305 Q256 325 276 305" fill="none" stroke="#388a92" stroke-width="12" stroke-linecap="round" />
+</svg>
