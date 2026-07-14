@@ -2,10 +2,48 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { Readable } = require('stream');
+const CONFIG = require('../../../config');
 
 const tempDir = path.join(__dirname, '..', '..', '..', '..', 'temp');
 if (!fs.existsSync(tempDir)) {
     fs.mkdirSync(tempDir, { recursive: true });
+}
+
+const CLEANUP_INTERVAL = CONFIG.INTERVALS.TEMP_CLEANUP;
+const MAX_FILE_AGE = CONFIG.INTERVALS.TEMP_MAX_FILE_AGE;
+
+function cleanTempDir() {
+    fs.readdir(tempDir, (err, files) => {
+        if (err) {
+            console.error('Failed to read temp directory for cleanup:', err);
+            return;
+        }
+        const now = Date.now();
+        files.forEach(file => {
+            const filePath = path.join(tempDir, file);
+            fs.stat(filePath, (err, stats) => {
+                if (err) {
+                    console.error('Failed to stat file for cleanup:', file, err);
+                    return;
+                }
+                if (now - stats.mtimeMs > MAX_FILE_AGE) {
+                    fs.unlink(filePath, err => {
+                        if (err) {
+                            console.error('Failed to delete old temp file:', file, err);
+                        } else {
+                            console.log('Successfully deleted old temp file:', file);
+                        }
+                    });
+                }
+            });
+        });
+    });
+}
+
+cleanTempDir();
+const cleanupTimer = setInterval(cleanTempDir, CLEANUP_INTERVAL);
+if (cleanupTimer.unref) {
+    cleanupTimer.unref();
 }
 
 module.exports = (answer, mediator) => {
@@ -18,7 +56,7 @@ module.exports = (answer, mediator) => {
         try {
             const urlHash = crypto.createHash('md5').update(url).digest('hex');
             
-            const files = fs.readdirSync(tempDir);
+            const files = await fs.promises.readdir(tempDir);
             const cachedFileName = files.find(file => file.startsWith(urlHash));
 
             if (cachedFileName) {
@@ -57,15 +95,27 @@ module.exports = (answer, mediator) => {
             }
 
             const tempFilePath = path.join(tempDir, `${urlHash}_${originalFilename}`);
+            const tempFilePathTmp = `${tempFilePath}.${crypto.randomBytes(4).toString('hex')}.tmp`;
 
-            const fileStream = fs.createWriteStream(tempFilePath);
+            const fileStream = fs.createWriteStream(tempFilePathTmp);
             const nodeStream = Readable.fromWeb(response.body);
 
-            await new Promise((resolve, reject) => {
-                nodeStream.pipe(fileStream);
-                fileStream.on('finish', resolve);
-                fileStream.on('error', reject);
-            });
+            try {
+                await new Promise((resolve, reject) => {
+                    nodeStream.pipe(fileStream);
+                    fileStream.on('finish', resolve);
+                    fileStream.on('error', reject);
+                });
+
+                await fs.promises.rename(tempFilePathTmp, tempFilePath);
+            } catch (err) {
+                if (fs.existsSync(tempFilePathTmp)) {
+                    try {
+                        fs.unlinkSync(tempFilePathTmp);
+                    } catch (_) {}
+                }
+                throw err;
+            }
 
             res.attachment(originalFilename);
             return res.sendFile(tempFilePath);

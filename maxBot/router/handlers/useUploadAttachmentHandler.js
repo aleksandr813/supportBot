@@ -11,7 +11,6 @@ module.exports = (bot, answer) => {
 
         const { buffer, originalname, mimetype } = file;
 
-        // Ensure temp directory exists for uploads
         const tempDir = path.join(__dirname, '..', '..', 'temp_uploads');
         if (!fs.existsSync(tempDir)) {
             fs.mkdirSync(tempDir, { recursive: true });
@@ -23,12 +22,10 @@ module.exports = (bot, answer) => {
 
             if (mimetype.startsWith('image/')) {
                 type = 'image';
-                // Images can be uploaded directly from buffer
                 uploadResult = await bot.api.uploadImage({ source: buffer });
             } else if (mimetype.startsWith('video/') || mimetype.startsWith('audio/')) {
                 type = mimetype.startsWith('video/') ? 'video' : 'audio';
                 
-                // Write buffer to temp file so the Max Bot API can query its size and stream it
                 tempFilePath = path.join(tempDir, `${randomUUID()}_${originalname}`);
                 fs.writeFileSync(tempFilePath, buffer);
 
@@ -39,7 +36,6 @@ module.exports = (bot, answer) => {
                 }
             } else {
                 type = 'file';
-                // Use monkeypatched buffer upload to bypass custom multipart stream bug
                 uploadResult = await bot.api.uploadFile({
                     source: { buffer, fileName: originalname },
                     timeout: 120000
@@ -65,7 +61,6 @@ module.exports = (bot, answer) => {
             console.error('Upload to max failed:', error);
             return res.send(answer.bad(2003));
         } finally {
-            // Clean up the temp file if one was written
             if (tempFilePath && fs.existsSync(tempFilePath)) {
                 try {
                     fs.unlinkSync(tempFilePath);

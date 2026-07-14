@@ -9,7 +9,6 @@ const UserManager = require('./application/modules/user/UserManager');
 const ConversationManager = require('./application/modules/conversation/ConversationManager');
 const BotManager = require('./application/modules/bot/BotManager');
 const OperatorManager = require('./application/modules/operator/OperatorManager');
-//const server = require('http');
 
 const { PORT, CORS } = CONFIG;
 

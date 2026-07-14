@@ -37,13 +37,9 @@ class Mediator {
 
     unsubscribe(name, _func) {
         if (!this.events[name]) return;
-
-        const handlerEntry = this.events[name]
-            .map((func, i) => ([func, i]))
-            .filter(([func]) => func === _func)[0];
-
-        if (handlerEntry) {
-            this.events[name].splice(handlerEntry[1], 1);
+        const index = this.events[name].indexOf(_func);
+        if (index !== -1) {
+            this.events[name].splice(index, 1);
         }
     }
 

@@ -2,7 +2,7 @@ const BaseManager = require('../BaseManager');
 const Bot = require('./Bot');
 
 
-class UserManager extends BaseManager {
+class BotManager extends BaseManager {
     constructor(options) {
         super(options);
         this.activeBots = {};
@@ -41,9 +41,7 @@ class UserManager extends BaseManager {
         const date = new Date().toISOString();
         return this.db.addMessage(text, conversationGuid, userGuid, 'operator', date, attachmentUrl, attachmentType, attachmentName);
     }
-    
-    //EVENTS
-    
+
     async eventSendMessage(data) {
         const { text, conversationGuid, attachments } = data;
 
@@ -59,7 +57,6 @@ class UserManager extends BaseManager {
         return this.answer.good(true);
     }
 
-    //TRIGGERS
     triggerGetBotByToken(token) {
         if (this.activeBots[token]) {
             return this.activeBots[token];
@@ -71,7 +68,6 @@ class UserManager extends BaseManager {
         return Object.values(this.activeBots).find(bot => bot.guid === guid) || null;
     }
 
-    // SOCKET HANDLERS
     checkOperatorToken(data, socket, eventName) {
         const { token, guid } = data || {};
         if (!this.mediator.get(this.TRIGGERS.CHECK_OPERATOR_TOKEN, { token, guid })) {
@@ -174,4 +170,4 @@ class UserManager extends BaseManager {
     }
 }
 
-module.exports = UserManager;
+module.exports = BotManager;

@@ -29,20 +29,20 @@ class Server {
     setupSocketListeners() {
         this.socket.on("connect", () => {
             console.log('connect');
-
-            this.socket.on(LOGIN, (data) => this.handleLogin(data));
-            this.socket.on(GET_CONVERSATIONS, (data) => this.handleGetConversations(data));
-            this.socket.on(GET_CONVERSATION_MESSAGES, (data) => this.handleGetConversationMessages(data));
-            this.socket.on(GET_CONVERSATION_INFO, (data) => this.handleGetConversationInfo(data));
-            this.socket.on(SEND_MESSAGE, (data) => this.handleSendMessage(data));
-            this.socket.on(NEW_MESSAGE, (data) => this.handleNewMessage(data));
-            this.socket.on(GET_BLOCKED_USERS, (data) => this.handleGetBlockedUsers(data));
-            this.socket.on(BLOCK_USER, (data) => this.handleBlockUser(data));
-            this.socket.on(GET_BOTS, (data) => this.handleGetBots(data));
-            this.socket.on(ADD_BOT, (data) => this.handleAddBot(data));
-            this.socket.on(UPDATE_BOT, (data) => this.handleUpdateBot(data));
-            this.socket.on(DELETE_BOT, (data) => this.handleDeleteBot(data));
         });
+
+        this.socket.on(LOGIN, (data) => this.handleLogin(data));
+        this.socket.on(GET_CONVERSATIONS, (data) => this.handleGetConversations(data));
+        this.socket.on(GET_CONVERSATION_MESSAGES, (data) => this.handleGetConversationMessages(data));
+        this.socket.on(GET_CONVERSATION_INFO, (data) => this.handleGetConversationInfo(data));
+        this.socket.on(SEND_MESSAGE, (data) => this.handleSendMessage(data));
+        this.socket.on(NEW_MESSAGE, (data) => this.handleNewMessage(data));
+        this.socket.on(GET_BLOCKED_USERS, (data) => this.handleGetBlockedUsers(data));
+        this.socket.on(BLOCK_USER, (data) => this.handleBlockUser(data));
+        this.socket.on(GET_BOTS, (data) => this.handleGetBots(data));
+        this.socket.on(ADD_BOT, (data) => this.handleAddBot(data));
+        this.socket.on(UPDATE_BOT, (data) => this.handleUpdateBot(data));
+        this.socket.on(DELETE_BOT, (data) => this.handleDeleteBot(data));
     }
 
     request(event, data = {}) {
@@ -53,8 +53,6 @@ class Server {
         }
         this.socket.emit(event, _data);
     }
-
-    // SENDING METHODS
 
     login(data) {
         this.request(LOGIN, data);
@@ -103,9 +101,6 @@ class Server {
     deleteBot(data) {
         this.request(DELETE_BOT, data);
     }
-
-
-    //SOCKET HANDLERS
 
     handleLogin(response) {
         const { guid, token } = response.data

@@ -9,16 +9,14 @@ export default function Settings({ setPage, PAGES }) {
   const server = useContext(ServerContext);
   const mediator = useContext(MediatorContext);
 
-  const [activeTab, setActiveTab] = useState('bots'); // 'bots' | 'blocked'
+  const [activeTab, setActiveTab] = useState('bots');
   
-  // Bots state
   const [bots, setBots] = useState([]);
   const [editingBotGuid, setEditingBotGuid] = useState(null);
   const [editForm, setEditForm] = useState({ token: '', adress: '', port: '' });
   const [newBotForm, setNewBotForm] = useState({ token: '', adress: 'localhost', port: '3004' });
   const [botError, setBotError] = useState('');
 
-  // Blocked users state
   const [blockedUsers, setBlockedUsers] = useState([]);
   const [newBlockForm, setNewBlockForm] = useState({ externalId: '', botGuid: '' });
   const [userError, setUserError] = useState('');
@@ -36,7 +34,6 @@ export default function Settings({ setPage, PAGES }) {
     setPage(PAGES.LOGIN);
   };
 
-  // Fetch initial data
   useEffect(() => {
     if (!mediator) return;
 
@@ -92,11 +89,9 @@ export default function Settings({ setPage, PAGES }) {
       if (res.result === 'ok') {
         const { externalId, botGuid, isBlocked } = res.data;
         if (isBlocked) {
-          // If blocking, refresh full list or add if we had enough info (but listing is safer)
           server.getBlockedUsers();
           setNewBlockForm({ externalId: '', botGuid: bots[0]?.bot_guid || '' });
         } else {
-          // If unblocking, remove from local list
           setBlockedUsers(prev => prev.filter(u => !(u.externalId === externalId && u.botGuid === botGuid)));
         }
         setUserError('');
@@ -112,7 +107,6 @@ export default function Settings({ setPage, PAGES }) {
     mediator.subscribe(GET_BLOCKED_USERS, handleGetBlockedUsers);
     mediator.subscribe(BLOCK_USER, handleBlockUser);
 
-    // Initial load
     server.getBots();
     server.getBlockedUsers();
 
@@ -126,14 +120,12 @@ export default function Settings({ setPage, PAGES }) {
     };
   }, [mediator]);
 
-  // Set default botGuid when bots load
   useEffect(() => {
     if (bots.length > 0 && !newBlockForm.botGuid) {
       setNewBlockForm(prev => ({ ...prev, botGuid: bots[0].bot_guid }));
     }
   }, [bots]);
 
-  // Bots Actions
   const handleAddBotSubmit = (e) => {
     e.preventDefault();
     if (!newBotForm.token || !newBotForm.adress || !newBotForm.port) {
@@ -175,7 +167,6 @@ export default function Settings({ setPage, PAGES }) {
     }
   };
 
-  // Block User Actions
   const handleBlockUserSubmit = (e) => {
     e.preventDefault();
     if (!newBlockForm.externalId || !newBlockForm.botGuid) {

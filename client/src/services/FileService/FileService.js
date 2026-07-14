@@ -5,12 +5,6 @@ class FileService {
         this.host = CONFIG.HOST.startsWith('http') ? CONFIG.HOST : `http://${CONFIG.HOST}`;
     }
 
-    /**
-     * Uploads a file for a specific conversation.
-     * @param {File} file 
-     * @param {string} conversationGuid 
-     * @returns {Promise<{ request: string, filename: string, type: string, localUrl: string }>}
-     */
     async upload(file, conversationGuid) {
         const formData = new FormData();
         formData.append('conversationGuid', conversationGuid);
@@ -35,12 +29,6 @@ class FileService {
         };
     }
 
-    /**
-     * Returns the attachment URL (proxied if it is video/document, or direct if it is an image).
-     * @param {string} attachmentUrl 
-     * @param {string} attachmentType 
-     * @returns {string}
-     */
     getProxiedUrl(attachmentUrl, attachmentType) {
         if (!attachmentUrl) return '';
         if (attachmentType === 'image') {
@@ -49,11 +37,6 @@ class FileService {
         return `${this.host}/videoProxy?url=${encodeURIComponent(attachmentUrl)}`;
     }
 
-    /**
-     * Programmatically triggers download of a file.
-     * @param {string} url 
-     * @param {string} filename 
-     */
     downloadFile(url, filename) {
         const link = document.createElement('a');
         link.href = url;

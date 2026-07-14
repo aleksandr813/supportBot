@@ -10,6 +10,11 @@ const CONFIG = {
     },
     PORT: 3003,
 
+    INTERVALS: {
+        TEMP_CLEANUP: 12 * 60 * 60 * 1000,
+        TEMP_MAX_FILE_AGE: 24 * 60 * 60 * 1000
+    },
+
     DATABASE: 'data.db',
 
     MEDIATOR: {

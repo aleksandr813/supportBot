@@ -15,7 +15,6 @@ function createMessageHandler(server, bot) {
             return;
         }
 
-        // Fetch fresh message details if there are attachments to get a URL signed for the bot's server IP
         if (attachments.length > 0 && ctx.message?.body?.mid) {
             try {
                 const freshMessage = await bot.api.getMessage(ctx.message.body.mid);

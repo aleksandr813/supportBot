@@ -6,19 +6,30 @@ class Server {
     }
 
     async request(path, body = {}) {
-        const response = await fetch(`${this.host}${path}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: CONFIG.SERVER_TOKEN, ...body }),
-        });
+        try {
+            const response = await fetch(`${this.host}${path}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: CONFIG.SERVER_TOKEN, ...body }),
+            });
 
-        const data = await response.json();
+            if (!response.ok) {
+                const text = await response.text().catch(() => '');
+                console.error(`Server request failed at path ${path}. Status: ${response.status}, Body: ${text}`);
+                return { result: 'error', error: { message: `HTTP Error: ${response.status}` } };
+            }
 
-        if (data?.result === 'error') {
-            console.error(data);
+            const data = await response.json();
+
+            if (data?.result === 'error') {
+                console.error(data);
+            }
+
+            return data;
+        } catch (error) {
+            console.error(`Request to server failed at path ${path}:`, error);
+            return { result: 'error', error: { message: error.message } };
         }
-
-        return data;
     }
 
     addUser(externalId, username, phone) {

@@ -42,7 +42,6 @@ class ConversationManager extends BaseManager {
         }));
     }
 
-    //EVENTS
     async eventNewMessage(message = {}) {
         const { token, externalId, text, attachments } = message;
         console.log("EVENT NEW MESSAGE RECEIVED:", JSON.stringify(message, null, 2));
@@ -51,7 +50,6 @@ class ConversationManager extends BaseManager {
         const botGuid = this.mediator.get(this.TRIGGERS.GET_BOT_BY_TOKEN, token).guid;
 
         const user = await this.mediator.get(this.TRIGGERS.GET_USER, {externalId, botGuid});
-        //console.log(user);
         if (!user) return this.answer.bad(503);
         if (user.isBlocked) return this.answer.bad(505);
         if (!user.currentConversation) return this.answer.bad(504);
@@ -111,7 +109,6 @@ class ConversationManager extends BaseManager {
         return this.answer.good(true);
     }
 
-    //SOCKET
     async socketGetConversationsList(data, socket) {
 
         if (!this.checkOperatorToken(data, socket)) return;

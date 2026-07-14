@@ -12,10 +12,10 @@ class Operator {
     async login(name, passwordHash) {
         const data = await this.db.getOperatorByLogin(name);
         if (!data) return false;
-        const { guid, password_hash } = data;
+        const { operator_guid, password_hash } = data;
         if (passwordHash === password_hash) {
             this.name = name;
-            this.guid = guid;
+            this.guid = operator_guid;
             this.token = this.common.token();
             return true;
         }

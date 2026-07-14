@@ -28,7 +28,6 @@ class OperatorManager extends BaseManager {
         console.log(socket.id);
         const operator = this.getOperatorBySocketId(socket.id);
         if (!operator) {
-            //console.log('Оператор с таким socketId не найден');
             return;
         }
         delete this.operators[operator.guid];
@@ -37,8 +36,6 @@ class OperatorManager extends BaseManager {
     getOperatorBySocketId(socketId) {
         return Object.values(this.operators).find(operator => operator.socketId === socketId) || null;
     }
-
-    //SOCKET
 
     async socketLogin(data = {}, socket) {
         const { name, passwordHash } = data;
@@ -56,15 +53,13 @@ class OperatorManager extends BaseManager {
     socketLogout(data, socket) {
         const { token } = data;
         const operator = this.getOperatorBySocketId(socket.id);
-        if (operator.token = token) {
+        if (operator && operator.token === token) {
             operator.logout();
         }
     }
 
-    //TRIGGERS
-
     triggerCheckOperatorToken({ token, guid }) {
-        if (this.operators[guid].token != token) return false;
+        if (!this.operators[guid] || this.operators[guid].token !== token) return false;
         return true;
     }
 }

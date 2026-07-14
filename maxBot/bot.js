@@ -8,7 +8,6 @@ const Answer = require('./answer');
 
 const bot = new Bot(CONFIG.BOT_TOKEN);
 
-// Monkeypatch bot.api.upload.getStreamFromSource to support uploading files/images directly from Buffer with original names
 const originalGetStreamFromSource = bot.api.upload.getStreamFromSource;
 bot.api.upload.getStreamFromSource = async (source) => {
     if (source && source.buffer && source.fileName) {

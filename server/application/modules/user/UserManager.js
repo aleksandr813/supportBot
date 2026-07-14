@@ -20,7 +20,7 @@ class UserManager extends BaseManager {
         }
     }
 
-    addUser(externalId, userGuid, botGuid, username, currentConversation = '', phone = '', isBlocked = 0) { //Добавляет только как активную запись!
+    addUser(externalId, userGuid, botGuid, username, currentConversation = '', phone = '', isBlocked = 0) {
         const _user = new User({ externalId, userGuid, botGuid, username, currentConversation, phone, isBlocked,
             callbacks: {
                 setUserConversation: (externalId, botGuid, newConversationGuid) => this.db.setUserConversation(externalId, botGuid, newConversationGuid),
@@ -32,7 +32,6 @@ class UserManager extends BaseManager {
 
     
     loadUser(userData) {
-        //console.log(userData);
         const { 
             external_id: externalId, 
             user_guid: userGuid,
@@ -52,7 +51,6 @@ class UserManager extends BaseManager {
         return false;
     }
 
-    //EVENTS
     async eventCreateUser(user) {
         const { token, externalId, username, phone } = user;
         const botGuid = this.mediator.get(this.TRIGGERS.GET_BOT_BY_TOKEN, token).guid;
@@ -68,11 +66,9 @@ class UserManager extends BaseManager {
         if (!user) return this.answer.bad(503);
         
         const key = `${externalId};${botGuid}`;
-        //console.log(this.activeUsers[key]);
         this.activeUsers[key].setConversation(newConversationGuid);
     }
 
-    //TRIGGERS
     async triggerGetUser({ externalId, botGuid} ) {
         const key = `${externalId};${botGuid}`;
         if (this.activeUsers[key]) return this.activeUsers[key].get();
@@ -91,7 +87,6 @@ class UserManager extends BaseManager {
         return this.triggerGetUser({ externalId: rawUser.external_id, botGuid: rawUser.bot_guid });
     }
 
-    // SOCKET HANDLERS
     checkOperatorToken(data, socket, eventName) {
         const { token, guid } = data || {};
         if (!this.mediator.get(this.TRIGGERS.CHECK_OPERATOR_TOKEN, { token, guid })) {
@@ -129,7 +124,6 @@ class UserManager extends BaseManager {
         try {
             await this.db.setUserBlockStatus(externalId, botGuid, isBlocked ? 1 : 0);
 
-            // Update in active users
             const key = `${externalId};${botGuid}`;
             if (this.activeUsers[key]) {
                 this.activeUsers[key].isBlocked = isBlocked ? 1 : 0;
