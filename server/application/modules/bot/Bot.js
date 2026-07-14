@@ -23,10 +23,11 @@ class Bot {
         return `${host}:${this.port}`;
     }
 
-    async sendMessage(text, externalId, conversationGuid, userGuid) {
+    async sendMessage(text, externalId, conversationGuid, userGuid, attachments = null) {
         const message = {
             text: text,
             externalId: externalId,
+            attachments: attachments,
         };
 
         try {
@@ -43,7 +44,9 @@ class Bot {
                 return false;
             }
 
-            await this.callbacks.addMessage(text, conversationGuid, userGuid);
+            const { attachmentUrl, attachmentType, attachmentName } = data.data || {};
+
+            await this.callbacks.addMessage(text, conversationGuid, userGuid, attachmentUrl, attachmentType, attachmentName);
             return true;
         } catch (error) {
             console.error(`Failed to send message to bot at ${this.getBaseUrl()}:`, error.message);

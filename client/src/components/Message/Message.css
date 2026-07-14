@@ -55,3 +55,53 @@
 .message__status--error {
     color: #e04b4b;
 }
+
+.message__attachment {
+    width: 100%;
+    margin-bottom: 6px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.message__img {
+    max-width: 100%;
+    max-height: 250px;
+    border-radius: 6px;
+    display: block;
+    object-fit: cover;
+}
+
+.message__video {
+    max-width: 100%;
+    max-height: 250px;
+    border-radius: 6px;
+    display: block;
+}
+
+.message__file-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #1f2a2c;
+    text-decoration: none;
+    transition: background-color 0.2s;
+    word-break: break-all;
+}
+
+.message__file-link:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.message--outgoing .message__file-link {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+}
+
+.message--outgoing .message__file-link:hover {
+    background: rgba(255, 255, 255, 0.25);
+}

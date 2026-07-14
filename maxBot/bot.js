@@ -6,6 +6,19 @@ const createHandlers = require('./handlers');
 const Router = require('./router/Router');
 const Answer = require('./answer');
 
+const bot = new Bot(CONFIG.BOT_TOKEN);
+
+// Monkeypatch bot.api.upload.getStreamFromSource to support uploading files/images directly from Buffer with original names
+const originalGetStreamFromSource = bot.api.upload.getStreamFromSource;
+bot.api.upload.getStreamFromSource = async (source) => {
+    if (source && source.buffer && source.fileName) {
+        return {
+            buffer: source.buffer,
+            fileName: source.fileName,
+        };
+    }
+    return originalGetStreamFromSource(source);
+};
 const server = new Server(CONFIG.HOST);
 
 const answer = new Answer();
@@ -16,9 +29,7 @@ const {
     handleRoleSelection,
     handleClose,
     handleUserMessage,
-} = createHandlers(server);
-
-const bot = new Bot(CONFIG.BOT_TOKEN);
+} = createHandlers(server, bot);
 
 bot.api.setMyCommands([
     { name: 'start', description: 'Начать обращение' },
@@ -35,8 +46,17 @@ bot.on('message_created', async (ctx) => {
         return handleContact(ctx);
     }
 
-    const text = ctx.message?.body?.text?.trim();
-    if (!text || text.startsWith('/')) {
+    console.log("INCOMING MESSAGE:", JSON.stringify(ctx.message, null, 2));
+
+    const text = ctx.message?.body?.text?.trim() || '';
+    const attachments = ctx.message?.body?.attachments || [];
+    const hasAttachments = attachments && attachments.length > 0;
+
+    if (text.startsWith('/')) {
+        return;
+    }
+
+    if (!text && !hasAttachments) {
         return;
     }
 

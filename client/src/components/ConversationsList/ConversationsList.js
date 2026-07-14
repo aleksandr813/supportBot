@@ -84,9 +84,21 @@ export default function ConversationsList({
                     return prev;
                 }
 
+                let lastMessageText = data.message.text;
+                if (!lastMessageText && (data.message.attachment_type || data.message.attachment_url)) {
+                    const type = data.message.attachment_type;
+                    if (type === 'image') {
+                        lastMessageText = '📷 Фото';
+                    } else if (type === 'video') {
+                        lastMessageText = '🎥 Видео';
+                    } else {
+                        lastMessageText = '📁 Файл';
+                    }
+                }
+
                 const updated = {
                     ...prev[idx],
-                    last_message: data.message.text,
+                    last_message: lastMessageText,
                     last_date: data.message.date,
                 };
 

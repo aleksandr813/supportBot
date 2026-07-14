@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState, useMemo, useLayoutEffect, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useMemo, useLayoutEffect, useCallback, useContext } from 'react';
 import Message from '../Message/Message';
 import ConversationHeader from '../ConversationHeader/ConversationHeader';
+import { FileServiceContext } from '../../App';
 
 import './ConversationBlock.css';
 
@@ -21,6 +22,32 @@ export default function ConversationBlock({
     const [isLoading, setIsLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [messageText, setMessageText] = useState('');
+
+    const fileInputRef = useRef(null);
+    const [uploadingFile, setUploadingFile] = useState(false);
+    const [attachment, setAttachment] = useState(null);
+
+    const fileService = useContext(FileServiceContext);
+
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setUploadingFile(true);
+
+        try {
+            const uploadedAttachment = await fileService.upload(file, conversationGuid);
+            setAttachment(uploadedAttachment);
+        } catch (err) {
+            console.error('File upload failed:', err);
+            alert(err.message || 'Ошибка сети при загрузке файла');
+        } finally {
+            setUploadingFile(false);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
+    };
 
     const isLoadingRef = useRef(false);
     const cursorRef = useRef(null);
@@ -55,6 +82,7 @@ export default function ConversationBlock({
         cursorRef.current = null;
         prevScrollHeightRef.current = 0;
         pendingHistoryScrollRef.current = false;
+        setAttachment(null);
 
         const handleHistory = (data) => {
             if (data.conversationGuid !== undefined && data.conversationGuid !== conversationGuid) return;
@@ -149,7 +177,7 @@ export default function ConversationBlock({
 
     const handleSend = () => {
         const text = messageText.trim();
-        if (!text) return;
+        if (!text && !attachment) return;
 
         const tempId = generateTempId();
 
@@ -159,12 +187,21 @@ export default function ConversationBlock({
             date: new Date().toISOString(),
             sender: 'operator',
             status: 'sending',
+            attachment_url: attachment ? attachment.localUrl : null,
+            attachment_type: attachment ? attachment.type : null,
+            attachment_name: attachment ? attachment.filename : null,
         };
 
         setMessages(prev => [optimisticMessage, ...prev]);
         setMessageText('');
+        setAttachment(null);
 
-        server.sendMessage({ text, conversationGuid, tempId });
+        server.sendMessage({
+            text,
+            conversationGuid,
+            tempId,
+            attachments: attachment ? [attachment.request] : null
+        });
     };
 
     const handleKeyDown = (e) => {
@@ -201,11 +238,44 @@ export default function ConversationBlock({
                         date={msg.date}
                         isOutgoing={msg.sender === 'operator'}
                         status={msg.status}
+                        attachmentUrl={msg.attachment_url}
+                        attachmentType={msg.attachment_type}
+                        attachmentName={msg.attachment_name}
                     />
                 ))}
             </div>
 
+            {attachment && (
+                <div className="conversation-block__attachment-preview">
+                    <span className="conversation-block__attachment-name">
+                        📎 {attachment.filename} ({attachment.type === 'image' ? 'Фото' : attachment.type === 'video' ? 'Видео' : 'Документ'})
+                    </span>
+                    <button
+                        type="button"
+                        className="conversation-block__attachment-remove"
+                        onClick={() => setAttachment(null)}
+                    >
+                        ✕
+                    </button>
+                </div>
+            )}
+
             <div className="conversation-block__input-row">
+                <button
+                    type="button"
+                    className="conversation-block__attach-btn"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingFile}
+                    title="Прикрепить файл"
+                >
+                    {uploadingFile ? '⏳' : '📎'}
+                </button>
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    style={{ display: 'none' }}
+                />
                 <textarea
                     ref={textareaRef}
                     rows={1}

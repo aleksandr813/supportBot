@@ -3,6 +3,8 @@ const useAddUserHandler = require('./useAddUserHandler');
 const useCreateConversation = require('./useCreateConversation');
 const useEndConversation = require('./useEndConversation');
 const useMessageHandler = require('./useMessageHandler');
+const useUploadHandler = require('./useUploadHandler');
+const useVideoProxyHandler = require('./useVideoProxyHandler');
 
 module.exports = {
     notFoundHandler,
@@ -10,4 +12,6 @@ module.exports = {
     useAddUserHandler,
     useCreateConversation,
     useEndConversation,
+    useUploadHandler,
+    useVideoProxyHandler,
 }

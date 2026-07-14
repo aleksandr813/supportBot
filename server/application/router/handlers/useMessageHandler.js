@@ -13,7 +13,7 @@ module.exports = (answer, mediator) => {
             return res.send(answer.bad(403));
         }
 
-        if (!message.externalId || !message.text) {
+        if (!message.externalId || (!message.text && (!message.attachments || message.attachments.length === 0))) {
             return res.send(answer.bad(242));
         }
         

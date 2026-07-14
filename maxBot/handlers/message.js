@@ -7,11 +7,24 @@ const { requestPhone, showRoleSelection } = require('../flows');
 
 const { PHONE_REQUIRED, ROLE_REQUIRED } = CONFIG.ERROR_CODES;
 
-function createMessageHandler(server) {
+function createMessageHandler(server, bot) {
     return async function handleUserMessage(ctx) {
-        const text = ctx.message?.body?.text?.trim();
-        if (!text) {
+        const text = ctx.message?.body?.text?.trim() || '';
+        let attachments = ctx.message?.body?.attachments || [];
+        if (!text && attachments.length === 0) {
             return;
+        }
+
+        // Fetch fresh message details if there are attachments to get a URL signed for the bot's server IP
+        if (attachments.length > 0 && ctx.message?.body?.mid) {
+            try {
+                const freshMessage = await bot.api.getMessage(ctx.message.body.mid);
+                if (freshMessage?.body?.attachments) {
+                    attachments = freshMessage.body.attachments;
+                }
+            } catch (err) {
+                console.error("Failed to fetch fresh message details for attachments:", err);
+            }
         }
 
         const externalId = getExternalId(ctx);
@@ -24,7 +37,7 @@ function createMessageHandler(server) {
             return ctx.reply(MESSAGES.ROLE_PROMPT_RETRY, { attachments: [roleKeyboard] });
         }
 
-        const result = await server.sendMessage(externalId, text);
+        const result = await server.sendMessage(externalId, text, attachments);
 
         if (result.result === 'error') {
             if (result.error?.code === PHONE_REQUIRED) {

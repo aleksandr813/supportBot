@@ -51,11 +51,14 @@ class DB {
             this.db.run(`
                 CREATE TABLE IF NOT EXISTS "messages" (
                     "message_id" INTEGER NOT NULL UNIQUE,
-                    "text" TEXT NOT NULL,
+                    "text" TEXT,
                     "conversation_guid" TEXT NOT NULL,
                     "user_guid" TEXT NOT NULL,
                     "sender" TEXT NOT NULL DEFAULT 'user', -- 'user' | 'operator'
                     "date" TEXT NOT NULL,
+                    "attachment_url" TEXT,
+                    "attachment_type" TEXT,
+                    "attachment_name" TEXT,
                     PRIMARY KEY("message_id" AUTOINCREMENT),
                     FOREIGN KEY("conversation_guid") REFERENCES "conversations"("conversation_guid"),
                     FOREIGN KEY("user_guid") REFERENCES "users"("user_guid")
@@ -122,15 +125,18 @@ class DB {
         );
     }
 
-    async addMessage(text, conversationGuid, userGuid, sender, date) {
+    async addMessage(text, conversationGuid, userGuid, sender, date, attachmentUrl = null, attachmentType = null, attachmentName = null) {
         await this.orm.update('conversations', { last_date: date }, { conversation_guid: conversationGuid });
 
         return this.orm.insert('messages', {
-            text,
+            text: text || '',
             conversation_guid: conversationGuid,
             user_guid: userGuid,
             sender,
             date,
+            attachment_url: attachmentUrl,
+            attachment_type: attachmentType,
+            attachment_name: attachmentName,
         });
     }
 
@@ -146,7 +152,13 @@ class DB {
                 c.last_date,
                 c.role,
                 (
-                    SELECT m.text 
+                    SELECT CASE 
+                        WHEN m.text IS NOT NULL AND m.text != '' THEN m.text
+                        WHEN m.attachment_type = 'image' THEN '📷 Фото'
+                        WHEN m.attachment_type = 'video' THEN '🎥 Видео'
+                        WHEN m.attachment_type IS NOT NULL THEN '📁 Файл'
+                        ELSE ''
+                    END
                     FROM messages m 
                     WHERE m.conversation_guid = c.conversation_guid 
                     ORDER BY m.message_id DESC 
@@ -188,7 +200,10 @@ class DB {
                 m.message_id,
                 m.text,
                 m.date,
-                m.sender
+                m.sender,
+                m.attachment_url,
+                m.attachment_type,
+                m.attachment_name
             FROM messages m
             WHERE m.conversation_guid = ?
         `;

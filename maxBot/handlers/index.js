@@ -4,13 +4,13 @@ const createRoleHandler = require('./role');
 const createCloseHandler = require('./close');
 const createMessageHandler = require('./message');
 
-function createHandlers(server) {
+function createHandlers(server, bot) {
     return {
         handleStart,
         handleContact: createContactHandler(server),
         handleRoleSelection: createRoleHandler(server),
         handleClose: createCloseHandler(server),
-        handleUserMessage: createMessageHandler(server),
+        handleUserMessage: createMessageHandler(server, bot),
     };
 }
 

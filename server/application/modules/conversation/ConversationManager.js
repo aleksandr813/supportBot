@@ -44,7 +44,8 @@ class ConversationManager extends BaseManager {
 
     //EVENTS
     async eventNewMessage(message = {}) {
-        const { token, externalId, text } = message;
+        const { token, externalId, text, attachments } = message;
+        console.log("EVENT NEW MESSAGE RECEIVED:", JSON.stringify(message, null, 2));
         const date = new Date().toISOString();
 
         const botGuid = this.mediator.get(this.TRIGGERS.GET_BOT_BY_TOKEN, token).guid;
@@ -54,7 +55,17 @@ class ConversationManager extends BaseManager {
         if (!user) return this.answer.bad(503);
         if (!user.currentConversation) return this.answer.bad(504);
 
-        await this.db.addMessage(text, user.currentConversation, user.userGuid, 'user', date);
+        let attachmentUrl = null;
+        let attachmentType = null;
+        let attachmentName = null;
+        if (attachments && attachments.length > 0) {
+            const att = attachments[0];
+            attachmentUrl = att.payload?.url || null;
+            attachmentType = att.type || null;
+            attachmentName = att.filename || null;
+        }
+
+        await this.db.addMessage(text, user.currentConversation, user.userGuid, 'user', date, attachmentUrl, attachmentType, attachmentName);
 
         await this.notifyAboutNewMessage(user.currentConversation);
 

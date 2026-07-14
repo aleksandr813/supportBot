@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useContext } from 'react';
+import { FileServiceContext } from '../../App';
 
 import './Message.css';
 
@@ -11,12 +12,55 @@ function formatTime(date) {
     return `${hours}:${minutes}`;
 }
 
-export default function Message({ text, date, isOutgoing, status }) {
+export default function Message({ text, date, isOutgoing, status, attachmentUrl, attachmentType, attachmentName }) {
   const className = isOutgoing ? "message message--outgoing" : "message";
+  const [mediaError, setMediaError] = useState(false);
+
+  const fileService = useContext(FileServiceContext);
+  const proxiedUrl = fileService.getProxiedUrl(attachmentUrl, attachmentType);
 
   return (
     <div className={className}>
-      <span className="message__text">{text}</span>
+      {attachmentUrl && (
+        <div className="message__attachment">
+          {attachmentType === 'image' && (
+            !mediaError ? (
+              <img 
+                src={attachmentUrl} 
+                alt={attachmentName || "image"} 
+                className="message__img" 
+                referrerPolicy="no-referrer"
+                onError={() => setMediaError(true)}
+              />
+            ) : (
+              <a href={attachmentUrl} target="_blank" rel="noopener noreferrer" className="message__file-link">
+                🖼️ Изображение (Скачать)
+              </a>
+            )
+          )}
+          {attachmentType === 'video' && (
+            !mediaError ? (
+              <video 
+                src={proxiedUrl} 
+                controls 
+                className="message__video" 
+                referrerPolicy="no-referrer"
+                onError={() => setMediaError(true)}
+              />
+            ) : (
+              <a href={proxiedUrl} target="_blank" rel="noopener noreferrer" className="message__file-link" download={attachmentName || "video.mp4"}>
+                🎥 Видео (Скачать)
+              </a>
+            )
+          )}
+          {attachmentType !== 'image' && attachmentType !== 'video' && (
+            <a href={proxiedUrl} target="_blank" rel="noopener noreferrer" className="message__file-link" download={attachmentName || "file"}>
+              📁 {attachmentName || "Скачать файл"}
+            </a>
+          )}
+        </div>
+      )}
+      {text && <span className="message__text">{text}</span>}
       <span className="message__footer">
         {status === 'sending' && (
           <span

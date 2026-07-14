@@ -33,8 +33,8 @@ class Server {
         return this.request('/endConversation', { externalId });
     }
 
-    sendMessage(externalId, text) {
-        return this.request('/newMessage', { externalId, text });
+    sendMessage(externalId, text, attachments) {
+        return this.request('/newMessage', { externalId, text, attachments });
     }
 }
 

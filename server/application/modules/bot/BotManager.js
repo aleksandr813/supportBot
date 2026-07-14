@@ -20,22 +20,23 @@ class UserManager extends BaseManager {
         bots.forEach(bot => { 
             this.activeBots[bot.token] = new Bot({ ...bot, 
                 callbacks: {
-                    addMessage: (text, conversationGuid, userGuid) => this.addMessage(text, userGuid, conversationGuid),
+                    addMessage: (text, conversationGuid, userGuid, attachmentUrl, attachmentType, attachmentName) => 
+                        this.addMessage(text, userGuid, conversationGuid, attachmentUrl, attachmentType, attachmentName),
                 },
              }); 
         });
         console.log("Получены боты: \n", this.activeBots);
     }
 
-    async addMessage(text, userGuid, conversationGuid) {
+    async addMessage(text, userGuid, conversationGuid, attachmentUrl = null, attachmentType = null, attachmentName = null) {
         const date = new Date().toISOString();
-        return this.db.addMessage(text, conversationGuid, userGuid, 'operator', date);
+        return this.db.addMessage(text, conversationGuid, userGuid, 'operator', date, attachmentUrl, attachmentType, attachmentName);
     }
     
     //EVENTS
     
     async eventSendMessage(data) {
-        const { text, conversationGuid } = data;
+        const { text, conversationGuid, attachments } = data;
 
         const user = await this.mediator.get(this.TRIGGERS.GET_USER_BY_CONVERSATION_GUID, conversationGuid);
         if (!user) return this.answer.bad(503);
@@ -43,7 +44,7 @@ class UserManager extends BaseManager {
         const bot = this.triggerGetBotByUserGuid(user.botGuid);
         if (!bot) return this.answer.bad(405);
 
-        const result = await this.activeBots[bot.token].sendMessage(text, user.externalId, conversationGuid, user.userGuid);
+        const result = await this.activeBots[bot.token].sendMessage(text, user.externalId, conversationGuid, user.userGuid, attachments);
 
         if (!result) return this.answer.bad(406);
         return this.answer.good(true);
