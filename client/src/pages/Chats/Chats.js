@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import md5 from 'md5';
 import { ServerContext, MediatorContext } from '../../App';
 import Sidebar from '../../components/Sidebar/Sidebar';
@@ -12,6 +12,18 @@ export default function Chats({ setPage, PAGES }) {
   const mediator = useContext(MediatorContext);
 
   const [selectedConversationGuid, setSelectedConversationGuid] = useState(null);
+
+  useEffect(() => {
+    if (!mediator) return;
+    const { DELETE_ALL_CONVERSATIONS } = mediator.getEventTypes();
+    const handleDeleteAll = () => {
+      setSelectedConversationGuid(null);
+    };
+    mediator.subscribe(DELETE_ALL_CONVERSATIONS, handleDeleteAll);
+    return () => {
+      mediator.unsubscribe(DELETE_ALL_CONVERSATIONS, handleDeleteAll);
+    };
+  }, [mediator]);
 
   const handleSelectConversation = (conversationGuid) => {
     setSelectedConversationGuid(conversationGuid);

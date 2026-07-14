@@ -379,3 +379,34 @@
     margin: 0;
     max-width: 320px;
 }
+
+/* Danger Zone */
+.settings-section__card--danger {
+    border-color: #fed7d7;
+    background-color: #fff5f5;
+}
+
+.text-danger {
+    color: #e53e3e !important;
+}
+
+.danger-zone-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.danger-zone-desc {
+    font-size: 14px;
+    color: #718096;
+    margin: 0;
+}
+
+@media (max-width: 600px) {
+    .danger-zone-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+}

@@ -37,7 +37,7 @@ export default function Settings({ setPage, PAGES }) {
   useEffect(() => {
     if (!mediator) return;
 
-    const { GET_BOTS, ADD_BOT, UPDATE_BOT, DELETE_BOT, GET_BLOCKED_USERS, BLOCK_USER } = mediator.getEventTypes();
+    const { GET_BOTS, ADD_BOT, UPDATE_BOT, DELETE_BOT, GET_BLOCKED_USERS, BLOCK_USER, DELETE_ALL_CONVERSATIONS } = mediator.getEventTypes();
 
     const handleGetBots = (res) => {
       if (res.result === 'ok') {
@@ -100,12 +100,21 @@ export default function Settings({ setPage, PAGES }) {
       }
     };
 
+    const handleDeleteAllConversations = (res) => {
+      if (res.result === 'ok') {
+        alert('Все диалоги успешно удалены из базы данных!');
+      } else {
+        alert('Ошибка при удалении диалогов: ' + (res.error?.message || 'Неизвестная ошибка'));
+      }
+    };
+
     mediator.subscribe(GET_BOTS, handleGetBots);
     mediator.subscribe(ADD_BOT, handleAddBot);
     mediator.subscribe(UPDATE_BOT, handleUpdateBot);
     mediator.subscribe(DELETE_BOT, handleDeleteBot);
     mediator.subscribe(GET_BLOCKED_USERS, handleGetBlockedUsers);
     mediator.subscribe(BLOCK_USER, handleBlockUser);
+    mediator.subscribe(DELETE_ALL_CONVERSATIONS, handleDeleteAllConversations);
 
     server.getBots();
     server.getBlockedUsers();
@@ -117,6 +126,7 @@ export default function Settings({ setPage, PAGES }) {
       mediator.unsubscribe(DELETE_BOT, handleDeleteBot);
       mediator.unsubscribe(GET_BLOCKED_USERS, handleGetBlockedUsers);
       mediator.unsubscribe(BLOCK_USER, handleBlockUser);
+      mediator.unsubscribe(DELETE_ALL_CONVERSATIONS, handleDeleteAllConversations);
     };
   }, [mediator]);
 
@@ -186,6 +196,12 @@ export default function Settings({ setPage, PAGES }) {
       botGuid,
       isBlocked: false,
     });
+  };
+
+  const handleDeleteAllConversationsClick = () => {
+    if (window.confirm('Вы уверены, что хотите удалить ВСЕ диалоги и сообщения из базы данных? Это действие необратимо.')) {
+      server.deleteAllConversations();
+    }
   };
 
   return (
@@ -362,6 +378,17 @@ export default function Settings({ setPage, PAGES }) {
                   <span>Добавить бота</span>
                 </button>
               </form>
+            </div>
+
+            <div className="settings-section__card settings-section__card--danger" style={{ marginTop: '24px' }}>
+              <h2 className="settings-section__card-title text-danger">Опасная зона</h2>
+              <div className="danger-zone-content">
+                <p className="danger-zone-desc">Очистка всей базы данных диалогов и сообщений. Это действие необратимо.</p>
+                <button onClick={handleDeleteAllConversationsClick} className="submit-btn submit-btn--danger">
+                  <Trash2 size={16} />
+                  <span>Удалить все диалоги</span>
+                </button>
+              </div>
             </div>
           </div>
         )}

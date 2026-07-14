@@ -42,7 +42,7 @@ export default function ConversationsList({
     useEffect(() => {
         if (!mediator) return;
 
-        const { GET_CONVERSATIONS } = mediator.getEventTypes();
+        const { GET_CONVERSATIONS, DELETE_ALL_CONVERSATIONS } = mediator.getEventTypes();
 
         const handleConversations = (data) => {
             setConversations(prev => {
@@ -61,14 +61,24 @@ export default function ConversationsList({
             isLoadingRef.current = false;
         };
 
+        const handleDeleteAll = () => {
+            setConversations([]);
+            cursorRef.current = null;
+            setHasMore(false);
+        };
+
         mediator.subscribe(GET_CONVERSATIONS, handleConversations);
+        mediator.subscribe(DELETE_ALL_CONVERSATIONS, handleDeleteAll);
 
         requestCursorRef.current = null;
         isLoadingRef.current = true;
         setIsLoading(true);
         server.getConversations({ limit: 20 });
 
-        return () => mediator.unsubscribe(GET_CONVERSATIONS, handleConversations);
+        return () => {
+            mediator.unsubscribe(GET_CONVERSATIONS, handleConversations);
+            mediator.unsubscribe(DELETE_ALL_CONVERSATIONS, handleDeleteAll);
+        };
     }, []);
 
     useEffect(() => {

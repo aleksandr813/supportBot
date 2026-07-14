@@ -15,7 +15,8 @@ const {
     GET_BOTS,
     ADD_BOT,
     UPDATE_BOT,
-    DELETE_BOT
+    DELETE_BOT,
+    DELETE_ALL_CONVERSATIONS
 } = CONFIG.SOCKET;
 
 class Server {
@@ -43,6 +44,7 @@ class Server {
         this.socket.on(ADD_BOT, (data) => this.handleAddBot(data));
         this.socket.on(UPDATE_BOT, (data) => this.handleUpdateBot(data));
         this.socket.on(DELETE_BOT, (data) => this.handleDeleteBot(data));
+        this.socket.on(DELETE_ALL_CONVERSATIONS, (data) => this.handleDeleteAllConversations(data));
     }
 
     request(event, data = {}) {
@@ -102,6 +104,10 @@ class Server {
         this.request(DELETE_BOT, data);
     }
 
+    deleteAllConversations(data = {}) {
+        this.request(DELETE_ALL_CONVERSATIONS, data);
+    }
+
     handleLogin(response) {
         const { guid, token } = response.data
         this.store.setUserParams(guid, token);
@@ -150,6 +156,10 @@ class Server {
 
     handleDeleteBot(response) {
         this.mediator.call(DELETE_BOT, response);
+    }
+
+    handleDeleteAllConversations(response) {
+        this.mediator.call(DELETE_ALL_CONVERSATIONS, response);
     }
 
 }

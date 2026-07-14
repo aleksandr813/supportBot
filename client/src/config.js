@@ -24,6 +24,7 @@ const CONFIG = {
         ADD_BOT: 'ADD_BOT',
         UPDATE_BOT: 'UPDATE_BOT',
         DELETE_BOT: 'DELETE_BOT',
+        DELETE_ALL_CONVERSATIONS: 'DELETE_ALL_CONVERSATIONS',
     },
 }
 

@@ -260,6 +260,13 @@ class DB {
         return this.orm.get('users', {current_conversation: conversationGuid});
     }
 
+    async deleteAllConversations() {
+        await this.orm.update('users', { current_conversation: '' }, {});
+        await this.orm.delete('messages', {});
+        await this.orm.delete('conversations', {});
+        return true;
+    }
+
 }
 
 module.exports = DB;

@@ -2,7 +2,7 @@ const BaseManager = require('../BaseManager');
 
 const CONFIG = require('../../../config');
 
-const { GET_CONVERSATIONS, GET_CONVERSATION_INFO, GET_CONVERSATION_MESSAGES, SEND_MESSAGE, NEW_MESSAGE } = CONFIG.SOCKET;
+const { GET_CONVERSATIONS, GET_CONVERSATION_INFO, GET_CONVERSATION_MESSAGES, SEND_MESSAGE, NEW_MESSAGE, DELETE_ALL_CONVERSATIONS } = CONFIG.SOCKET;
 
 class ConversationManager extends BaseManager {
     constructor(options) {
@@ -20,6 +20,7 @@ class ConversationManager extends BaseManager {
             socket.on(GET_CONVERSATION_INFO, (data) => this.socketGetConversationInfo(data, socket));
             socket.on(GET_CONVERSATION_MESSAGES, (data) => this.socketGetConversationMessages(data, socket));
             socket.on(SEND_MESSAGE, (data) => this.socketSendMessage(data, socket));
+            socket.on(DELETE_ALL_CONVERSATIONS, (data) => this.socketDeleteAllConversations(data, socket));
         });
     }
 
@@ -204,7 +205,18 @@ class ConversationManager extends BaseManager {
         if (success) {
             await this.notifyAboutNewMessage(data.conversationGuid, tempId);
         }
-    }
+     }
+
+     async socketDeleteAllConversations(data, socket) {
+         if (!this.checkOperatorToken(data, socket, DELETE_ALL_CONVERSATIONS)) return;
+         try {
+             await this.db.deleteAllConversations();
+             this.mediator.call(this.EVENTS.DELETE_ALL_CONVERSATIONS);
+             this.io.emit(DELETE_ALL_CONVERSATIONS, this.answer.good(true));
+         } catch (err) {
+             socket.emit(DELETE_ALL_CONVERSATIONS, this.answer.bad(500));
+         }
+     }
 }
 
 module.exports = ConversationManager;

@@ -9,6 +9,7 @@ class UserManager extends BaseManager {
 
         this.mediator.subscribe(this.EVENTS.SET_USER_CONVERSATION, (data) => this.eventSetUserConversation(data));
         this.mediator.subscribe(this.EVENTS.ADD_USER, (user) => this.eventCreateUser(user));
+        this.mediator.subscribe(this.EVENTS.DELETE_ALL_CONVERSATIONS, () => this.eventDeleteAllConversations());
         this.mediator.set(this.TRIGGERS.GET_USER, (user) => this.triggerGetUser(user));
         this.mediator.set(this.TRIGGERS.GET_USER_BY_CONVERSATION_GUID, (data) => this.triggerGetUserByConversationGuid(data));
 
@@ -67,6 +68,12 @@ class UserManager extends BaseManager {
         
         const key = `${externalId};${botGuid}`;
         this.activeUsers[key].setConversation(newConversationGuid);
+    }
+
+    eventDeleteAllConversations() {
+        for (const key in this.activeUsers) {
+            this.activeUsers[key].currentConversation = '';
+        }
     }
 
     async triggerGetUser({ externalId, botGuid} ) {
