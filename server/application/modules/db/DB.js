@@ -85,10 +85,6 @@ class DB {
                 CREATE INDEX IF NOT EXISTS idx_messages_conv_id 
                 ON messages(conversation_guid, message_id DESC)
             `);
-
-            this.db.run(`
-                ALTER TABLE "users" ADD COLUMN "is_blocked" INTEGER DEFAULT 0
-            `, () => {});
         });
     }
 
