@@ -53,6 +53,7 @@ class ConversationManager extends BaseManager {
         const user = await this.mediator.get(this.TRIGGERS.GET_USER, {externalId, botGuid});
         //console.log(user);
         if (!user) return this.answer.bad(503);
+        if (user.isBlocked) return this.answer.bad(505);
         if (!user.currentConversation) return this.answer.bad(504);
 
         let attachmentUrl = null;
@@ -80,6 +81,7 @@ class ConversationManager extends BaseManager {
 
         const user = await this.mediator.get(this.TRIGGERS.GET_USER, {externalId, botGuid});
         if (!user) return this.answer.bad(503);
+        if (user.isBlocked) return this.answer.bad(505);
         if (user.currentConversation) return this.answer.bad(502);
 
         this.mediator.call(this.EVENTS.SET_USER_CONVERSATION, {externalId, botGuid, newConversationGuid: conversationGuid});
@@ -94,10 +96,17 @@ class ConversationManager extends BaseManager {
 
         const user = await this.mediator.get(this.TRIGGERS.GET_USER, {externalId, botGuid});
         if (!user) return this.answer.bad(503);
+        if (user.isBlocked) return this.answer.bad(505);
 
         if (!user.currentConversation) return this.answer.bad(504);
 
+        const conversationGuid = user.currentConversation;
+
         this.mediator.call(this.EVENTS.SET_USER_CONVERSATION, {externalId, botGuid, newConversationGuid: ''});
+
+        const conversationInfo = await this.db.getConversationInfo(conversationGuid);
+        const info = conversationInfo[0] ? { ...conversationInfo[0], conversationGuid, is_active: 0 } : { conversationGuid, is_active: 0 };
+        this.io.emit(GET_CONVERSATION_INFO, this.answer.good(info));
 
         return this.answer.good(true);
     }
@@ -170,7 +179,20 @@ class ConversationManager extends BaseManager {
     async socketSendMessage(data, socket) {
         if (!this.checkOperatorToken(data, socket)) return;
 
-        const { tempId = null } = data;
+        const { conversationGuid, tempId = null } = data;
+
+        const user = await this.db.getUserByConversationGuid(conversationGuid);
+        if (!user) {
+            socket.emit(SEND_MESSAGE, this.answer.good({
+                success: false,
+                tempId,
+                error: {
+                    code: 504,
+                    message: 'Пользователь не имеет активных обращений'
+                }
+            }));
+            return;
+        }
 
         const result = await this.mediator.call(this.EVENTS.SEND_MESSAGE, data);
 

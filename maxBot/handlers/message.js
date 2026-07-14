@@ -27,6 +27,10 @@ function createMessageHandler(server, bot) {
             }
         }
 
+        if (attachments.length > 1) {
+            return ctx.reply(MESSAGES.LIMIT_EXCEEDED);
+        }
+
         const externalId = getExternalId(ctx);
 
         if (SessionStore.isAwaitingPhone(externalId)) {

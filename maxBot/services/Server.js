@@ -25,6 +25,10 @@ class Server {
         return this.request('/addUser', { externalId, username, phone });
     }
 
+    getUser(externalId) {
+        return this.request('/getUser', { externalId });
+    }
+
     createConversation(externalId, role) {
         return this.request('/createConversation', { externalId, role });
     }

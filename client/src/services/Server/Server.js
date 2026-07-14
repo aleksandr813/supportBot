@@ -9,7 +9,13 @@ const {
     GET_CONVERSATION_MESSAGES, 
     GET_CONVERSATION_INFO, 
     SEND_MESSAGE, 
-    NEW_MESSAGE 
+    NEW_MESSAGE,
+    GET_BLOCKED_USERS,
+    BLOCK_USER,
+    GET_BOTS,
+    ADD_BOT,
+    UPDATE_BOT,
+    DELETE_BOT
 } = CONFIG.SOCKET;
 
 class Server {
@@ -30,6 +36,12 @@ class Server {
             this.socket.on(GET_CONVERSATION_INFO, (data) => this.handleGetConversationInfo(data));
             this.socket.on(SEND_MESSAGE, (data) => this.handleSendMessage(data));
             this.socket.on(NEW_MESSAGE, (data) => this.handleNewMessage(data));
+            this.socket.on(GET_BLOCKED_USERS, (data) => this.handleGetBlockedUsers(data));
+            this.socket.on(BLOCK_USER, (data) => this.handleBlockUser(data));
+            this.socket.on(GET_BOTS, (data) => this.handleGetBots(data));
+            this.socket.on(ADD_BOT, (data) => this.handleAddBot(data));
+            this.socket.on(UPDATE_BOT, (data) => this.handleUpdateBot(data));
+            this.socket.on(DELETE_BOT, (data) => this.handleDeleteBot(data));
         });
     }
 
@@ -68,6 +80,30 @@ class Server {
         this.request(SEND_MESSAGE, data);
     }
 
+    getBlockedUsers(data = {}) {
+        this.request(GET_BLOCKED_USERS, data);
+    }
+
+    blockUser(data) {
+        this.request(BLOCK_USER, data);
+    }
+
+    getBots(data = {}) {
+        this.request(GET_BOTS, data);
+    }
+
+    addBot(data) {
+        this.request(ADD_BOT, data);
+    }
+
+    updateBot(data) {
+        this.request(UPDATE_BOT, data);
+    }
+
+    deleteBot(data) {
+        this.request(DELETE_BOT, data);
+    }
+
 
     //SOCKET HANDLERS
 
@@ -95,6 +131,30 @@ class Server {
 
     handleNewMessage(response) {
         this.mediator.call(NEW_MESSAGE, response.data);
+    }
+
+    handleGetBlockedUsers(response) {
+        this.mediator.call(GET_BLOCKED_USERS, response);
+    }
+
+    handleBlockUser(response) {
+        this.mediator.call(BLOCK_USER, response);
+    }
+
+    handleGetBots(response) {
+        this.mediator.call(GET_BOTS, response);
+    }
+
+    handleAddBot(response) {
+        this.mediator.call(ADD_BOT, response);
+    }
+
+    handleUpdateBot(response) {
+        this.mediator.call(UPDATE_BOT, response);
+    }
+
+    handleDeleteBot(response) {
+        this.mediator.call(DELETE_BOT, response);
     }
 
 }

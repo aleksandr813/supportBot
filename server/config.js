@@ -35,6 +35,7 @@ const CONFIG = {
         ADD_USER: '/addUser',
         CREATE_CONVERSATION: '/createConversation',
         END_CONVERSATION: '/endConversation',
+        GET_USER: '/getUser',
     },
 
     SOCKET: {

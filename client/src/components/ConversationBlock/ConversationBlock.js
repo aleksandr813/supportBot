@@ -22,6 +22,7 @@ export default function ConversationBlock({
     const [isLoading, setIsLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [messageText, setMessageText] = useState('');
+    const [conversationInfo, setConversationInfo] = useState(null);
 
     const fileInputRef = useRef(null);
     const [uploadingFile, setUploadingFile] = useState(false);
@@ -75,7 +76,7 @@ export default function ConversationBlock({
     useEffect(() => {
         if (!mediator) return;
 
-        const { GET_CONVERSATION_MESSAGES, NEW_MESSAGE, SEND_MESSAGE } = mediator.getEventTypes();
+        const { GET_CONVERSATION_MESSAGES, NEW_MESSAGE, SEND_MESSAGE, GET_CONVERSATION_INFO, BLOCK_USER } = mediator.getEventTypes();
 
         setMessages([]);
         setHasMore(true);
@@ -83,6 +84,7 @@ export default function ConversationBlock({
         prevScrollHeightRef.current = 0;
         pendingHistoryScrollRef.current = false;
         setAttachment(null);
+        setConversationInfo(null);
 
         const handleHistory = (data) => {
             if (data.conversationGuid !== undefined && data.conversationGuid !== conversationGuid) return;
@@ -127,18 +129,41 @@ export default function ConversationBlock({
             )));
         };
 
+        const handleInfo = (data) => {
+            if (data && data.conversationGuid === conversationGuid) {
+                setConversationInfo(data);
+            }
+        };
+
+        const handleBlockUser = (data) => {
+            if (data.result === 'ok') {
+                const { externalId, botGuid, isBlocked } = data.data;
+                setConversationInfo(prev => {
+                    if (prev && prev.externalId === externalId && prev.botGuid === botGuid) {
+                        return { ...prev, is_blocked: isBlocked ? 1 : 0 };
+                    }
+                    return prev;
+                });
+            }
+        };
+
         mediator.subscribe(GET_CONVERSATION_MESSAGES, handleHistory);
         mediator.subscribe(NEW_MESSAGE, handleNewMessage);
         mediator.subscribe(SEND_MESSAGE, handleSendAck);
+        mediator.subscribe(GET_CONVERSATION_INFO, handleInfo);
+        mediator.subscribe(BLOCK_USER, handleBlockUser);
 
         setIsLoading(true);
         isLoadingRef.current = true;
         server.getConversationMessages({ conversationGuid, limit: 20 });
+        server.getConversationInfo({ conversationGuid });
 
         return () => {
             mediator.unsubscribe(GET_CONVERSATION_MESSAGES, handleHistory);
             mediator.unsubscribe(NEW_MESSAGE, handleNewMessage);
             mediator.unsubscribe(SEND_MESSAGE, handleSendAck);
+            mediator.unsubscribe(GET_CONVERSATION_INFO, handleInfo);
+            mediator.unsubscribe(BLOCK_USER, handleBlockUser);
         };
     }, [conversationGuid]);
 
@@ -211,13 +236,13 @@ export default function ConversationBlock({
         }
     };
 
+    const handleToggleBlock = (externalId, botGuid, isBlocked) => {
+        server.blockUser({ externalId, botGuid, isBlocked });
+    };
+
     return (
         <div className="conversation-block">
-            <ConversationHeader
-                conversationGuid={conversationGuid}
-                server={server}
-                mediator={mediator}
-            />
+            <ConversationHeader info={conversationInfo} onToggleBlock={handleToggleBlock} />
 
             <div className="conversation-block__messages" ref={containerRef}>
                 {!hasMore && messages.length > 0 && (
@@ -245,54 +270,66 @@ export default function ConversationBlock({
                 ))}
             </div>
 
-            {attachment && (
-                <div className="conversation-block__attachment-preview">
-                    <span className="conversation-block__attachment-name">
-                        📎 {attachment.filename} ({attachment.type === 'image' ? 'Фото' : attachment.type === 'video' ? 'Видео' : 'Документ'})
-                    </span>
-                    <button
-                        type="button"
-                        className="conversation-block__attachment-remove"
-                        onClick={() => setAttachment(null)}
-                    >
-                        ✕
-                    </button>
+            {conversationInfo && conversationInfo.is_blocked ? (
+                <div className="conversation-block__closed-banner conversation-block__closed-banner--blocked">
+                    Пользователь заблокирован
                 </div>
-            )}
+            ) : conversationInfo && !conversationInfo.is_active ? (
+                <div className="conversation-block__closed-banner">
+                    Диалог закрыт
+                </div>
+            ) : (
+                <>
+                    {attachment && (
+                        <div className="conversation-block__attachment-preview">
+                            <span className="conversation-block__attachment-name">
+                                📎 {attachment.filename} ({attachment.type === 'image' ? 'Фото' : attachment.type === 'video' ? 'Видео' : 'Документ'})
+                            </span>
+                            <button
+                                type="button"
+                                className="conversation-block__attachment-remove"
+                                onClick={() => setAttachment(null)}
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    )}
 
-            <div className="conversation-block__input-row">
-                <button
-                    type="button"
-                    className="conversation-block__attach-btn"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploadingFile}
-                    title="Прикрепить файл"
-                >
-                    {uploadingFile ? '⏳' : '📎'}
-                </button>
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    style={{ display: 'none' }}
-                />
-                <textarea
-                    ref={textareaRef}
-                    rows={1}
-                    className="conversation-block__input"
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Введите сообщение..."
-                />
-                <button
-                    type="button"
-                    className="conversation-block__send"
-                    onClick={handleSend}
-                >
-                    Отправить
-                </button>
-            </div>
+                    <div className="conversation-block__input-row">
+                        <button
+                            type="button"
+                            className="conversation-block__attach-btn"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploadingFile}
+                            title="Прикрепить файл"
+                        >
+                            {uploadingFile ? '⏳' : '📎'}
+                        </button>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            style={{ display: 'none' }}
+                        />
+                        <textarea
+                            ref={textareaRef}
+                            rows={1}
+                            className="conversation-block__input"
+                            value={messageText}
+                            onChange={(e) => setMessageText(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            placeholder="Введите сообщение..."
+                        />
+                        <button
+                            type="button"
+                            className="conversation-block__send"
+                            onClick={handleSend}
+                        >
+                            Отправить
+                        </button>
+                    </div>
+                </>
+            )}
         </div>
     );
 }

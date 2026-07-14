@@ -5,6 +5,7 @@ const useEndConversation = require('./useEndConversation');
 const useMessageHandler = require('./useMessageHandler');
 const useUploadHandler = require('./useUploadHandler');
 const useVideoProxyHandler = require('./useVideoProxyHandler');
+const useGetUserHandler = require('./useGetUserHandler');
 
 module.exports = {
     notFoundHandler,
@@ -14,4 +15,5 @@ module.exports = {
     useEndConversation,
     useUploadHandler,
     useVideoProxyHandler,
+    useGetUserHandler,
 }

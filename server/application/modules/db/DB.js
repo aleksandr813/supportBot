@@ -43,6 +43,7 @@ class DB {
                     "bot_guid" TEXT,
                     "current_conversation" TEXT,
                     "phone" TEXT,
+                    "is_blocked" INTEGER DEFAULT 0,
                     PRIMARY KEY("user_guid"),
                     FOREIGN KEY("current_conversation") REFERENCES "conversations"("conversation_guid")
                 )
@@ -84,6 +85,10 @@ class DB {
                 CREATE INDEX IF NOT EXISTS idx_messages_conv_id 
                 ON messages(conversation_guid, message_id DESC)
             `);
+
+            this.db.run(`
+                ALTER TABLE "users" ADD COLUMN "is_blocked" INTEGER DEFAULT 0
+            `, () => {});
         });
     }
 
@@ -91,16 +96,42 @@ class DB {
         return this.orm.all('bots');
     }
 
+    getBlockedUsers() {
+        return this.orm.all('users', { is_blocked: 1 });
+    }
+
+    setUserBlockStatus(externalId, botGuid, isBlocked) {
+        return this.orm.update('users', { is_blocked: isBlocked }, { external_id: externalId, bot_guid: botGuid });
+    }
+
+    addBot(guid, token, adress, port) {
+        return this.orm.insert('bots', {
+            bot_guid: guid,
+            token,
+            adress,
+            port
+        });
+    }
+
+    updateBot(guid, token, adress, port) {
+        return this.orm.update('bots', { token, adress, port }, { bot_guid: guid });
+    }
+
+    deleteBot(guid) {
+        return this.orm.delete('bots', { bot_guid: guid });
+    }
+
     getUser(externalId, botGuid) {
         return this.orm.get('users', { external_id: externalId, bot_guid: botGuid });
     }
 
-    createUser(userGuid, externalId, botGuid, username) {
+    createUser(userGuid, externalId, botGuid, username, phone) {
         return this.orm.insert('users', {
             user_guid: userGuid,
             external_id: externalId,
             bot_guid: botGuid,
             username: username,
+            phone: phone,
         });
     }
 
@@ -183,9 +214,14 @@ class DB {
     getConversationInfo(conversationGuid) {
         const sql = `
             SELECT 
+                c.conversation_guid AS conversationGuid,
                 c.role,
                 u.username,
-                u.phone
+                u.phone,
+                u.is_blocked AS is_blocked,
+                u.external_id AS externalId,
+                u.bot_guid AS botGuid,
+                (u.current_conversation = c.conversation_guid) AS is_active
                 FROM conversations c
                 JOIN users u ON u.external_id = c.external_id AND u.bot_guid = c.bot_guid
 				WHERE c.conversation_guid = ?

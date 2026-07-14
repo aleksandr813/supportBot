@@ -1,10 +1,16 @@
 .conversation-header {
     display: flex;
-    align-items: baseline;
-    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
     padding: 12px 16px;
     background: #ffffff;
     border-bottom: 1px solid #eef2f2;
+}
+
+.conversation-header__details {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
 }
 
 .conversation-header__username {
@@ -28,4 +34,34 @@
 .conversation-header__phone {
     font-size: 13px;
     color: #7c8b8d;
+}
+
+.conversation-header__block-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    background-color: #fff5f5;
+    color: #e53e3e;
+    border: 1px solid #fed7d7;
+}
+
+.conversation-header__block-btn:hover {
+    background-color: #e53e3e;
+    color: white;
+    border-color: #e53e3e;
+}
+
+.conversation-header__block-btn--blocked {
+    background-color: #f0fff4;
+    color: #38a169;
+    border-color: #c6f6d5;
+}
+
+.conversation-header__block-btn--blocked:hover {
+    background-color: #38a169;
+    color: white;
+    border-color: #38a169;
 }

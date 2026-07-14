@@ -12,6 +12,15 @@ class UserManager extends BaseManager {
 
         this.mediator.set(this.TRIGGERS.GET_BOT_BY_TOKEN, (data) => this.triggerGetBotByToken(data));
         this.mediator.set(this.TRIGGERS.GET_BOT_BY_USER_GUID, (data) => this.triggerGetBotByUserGuid(data));
+
+        if (this.io) {
+            this.io.on('connection', (socket) => {
+                socket.on('GET_BOTS', (data) => this.socketGetBots(data, socket));
+                socket.on('ADD_BOT', (data) => this.socketAddBot(data, socket));
+                socket.on('UPDATE_BOT', (data) => this.socketUpdateBot(data, socket));
+                socket.on('DELETE_BOT', (data) => this.socketDeleteBot(data, socket));
+            });
+        }
     }
 
     
@@ -60,6 +69,108 @@ class UserManager extends BaseManager {
 
     triggerGetBotByUserGuid(guid) {
         return Object.values(this.activeBots).find(bot => bot.guid === guid) || null;
+    }
+
+    // SOCKET HANDLERS
+    checkOperatorToken(data, socket, eventName) {
+        const { token, guid } = data || {};
+        if (!this.mediator.get(this.TRIGGERS.CHECK_OPERATOR_TOKEN, { token, guid })) {
+            socket.emit(eventName, this.answer.bad(302));
+            return false;
+        }
+        return true;
+    }
+
+    async socketGetBots(data, socket) {
+        if (!this.checkOperatorToken(data, socket, 'GET_BOTS')) return;
+        try {
+            const bots = await this.db.getBots();
+            socket.emit('GET_BOTS', this.answer.good(bots));
+        } catch (err) {
+            socket.emit('GET_BOTS', this.answer.bad(500));
+        }
+    }
+
+    async socketAddBot(data, socket) {
+        if (!this.checkOperatorToken(data, socket, 'ADD_BOT')) return;
+        const { token, adress, port } = data;
+        if (!token || !adress || !port) {
+            return socket.emit('ADD_BOT', this.answer.bad(242));
+        }
+        try {
+            const guid = this.common.guid();
+            await this.db.addBot(guid, token, adress, Number(port));
+
+            const botData = { bot_guid: guid, token, adress, port: Number(port) };
+            this.activeBots[token] = new Bot({
+                ...botData,
+                callbacks: {
+                    addMessage: (text, conversationGuid, userGuid, attachmentUrl, attachmentType, attachmentName) =>
+                        this.addMessage(text, userGuid, conversationGuid, attachmentUrl, attachmentType, attachmentName),
+                }
+            });
+
+            socket.emit('ADD_BOT', this.answer.good(botData));
+        } catch (err) {
+            socket.emit('ADD_BOT', this.answer.bad(500));
+        }
+    }
+
+    async socketUpdateBot(data, socket) {
+        if (!this.checkOperatorToken(data, socket, 'UPDATE_BOT')) return;
+        const { guid, token, adress, port } = data;
+        if (!guid || !token || !adress || !port) {
+            return socket.emit('UPDATE_BOT', this.answer.bad(242));
+        }
+        try {
+            const oldBot = Object.values(this.activeBots).find(b => b.guid === guid);
+            const oldToken = oldBot ? oldBot.token : null;
+
+            await this.db.updateBot(guid, token, adress, Number(port));
+
+            if (oldToken && oldToken !== token) {
+                delete this.activeBots[oldToken];
+            }
+
+            const botData = { bot_guid: guid, token, adress, port: Number(port) };
+            this.activeBots[token] = new Bot({
+                ...botData,
+                callbacks: {
+                    addMessage: (text, conversationGuid, userGuid, attachmentUrl, attachmentType, attachmentName) =>
+                        this.addMessage(text, userGuid, conversationGuid, attachmentUrl, attachmentType, attachmentName),
+                }
+            });
+
+            socket.emit('UPDATE_BOT', this.answer.good(botData));
+        } catch (err) {
+            socket.emit('UPDATE_BOT', this.answer.bad(500));
+        }
+    }
+
+    async socketDeleteBot(data, socket) {
+        if (!this.checkOperatorToken(data, socket, 'DELETE_BOT')) return;
+        const { guid } = data;
+        if (!guid) {
+            return socket.emit('DELETE_BOT', this.answer.bad(242));
+        }
+        try {
+            const botsCount = Object.keys(this.activeBots).length;
+            if (botsCount <= 1) {
+                return socket.emit('DELETE_BOT', this.answer.bad(601));
+            }
+
+            const bot = Object.values(this.activeBots).find(b => b.guid === guid);
+            if (!bot) {
+                return socket.emit('DELETE_BOT', this.answer.bad(405));
+            }
+
+            await this.db.deleteBot(guid);
+            delete this.activeBots[bot.token];
+
+            socket.emit('DELETE_BOT', this.answer.good({ guid }));
+        } catch (err) {
+            socket.emit('DELETE_BOT', this.answer.bad(500));
+        }
     }
 }
 

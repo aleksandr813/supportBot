@@ -7,8 +7,8 @@ const menuItems = [
   { key: "settings", label: "Настройки", icon: Settings },
 ];
 
-export default function Sidebar({ onNavigate, onLogout }) {
-  const [active, setActive] = useState("chats");
+export default function Sidebar({ onNavigate, onLogout, defaultActive = "chats" }) {
+  const [active, setActive] = useState(defaultActive);
 
   const handleClick = (key) => {
     setActive(key);
