@@ -2,7 +2,11 @@ import CONFIG from '../../config';
 
 class FileService {
     constructor() {
-        this.host = CONFIG.HOST.startsWith('http') ? CONFIG.HOST : `http://${CONFIG.HOST}`;
+        this.host = !CONFIG.HOST
+        ? ''
+        : CONFIG.HOST.startsWith('http')
+            ? CONFIG.HOST
+            : `http://${CONFIG.HOST}`;
     }
 
     async upload(file, conversationGuid) {

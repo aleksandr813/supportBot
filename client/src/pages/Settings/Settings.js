@@ -403,7 +403,7 @@ export default function Settings({ setPage, PAGES }) {
               {blockedUsers.length === 0 ? (
                 <div className="empty-state">
                   <UserCheck className="empty-state__icon" size={48} style={{ color: '#4aa5ae' }} />
-                  <p className="empty-state__text">Черный список пуст. Все пользователи могут обращаться в поддержку.</p>
+                  <p className="empty-state__text">Черный список пуст. Все пользователи могут отправлять обращения.</p>
                 </div>
               ) : (
                 <div className="blocked-list">

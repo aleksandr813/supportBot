@@ -2,6 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { Readable } = require('stream');
+const dns = require('dns');
+const { URL } = require('url');
 const CONFIG = require('../../../config');
 
 const tempDir = path.join(__dirname, '..', '..', '..', '..', 'temp');
@@ -46,11 +48,57 @@ if (cleanupTimer.unref) {
     cleanupTimer.unref();
 }
 
+function resolveIP(hostname) {
+    return new Promise((resolve, reject) => {
+        dns.lookup(hostname, (err, address) => {
+            if (err) reject(err);
+            else resolve(address);
+        });
+    });
+}
+
+function isPrivateIP(ip) {
+    if (!ip) return true;
+    const ipv4Regex = /^(?:127\.|10\.|192\.168\.|169\.254\.)/;
+    if (ipv4Regex.test(ip)) return true;
+
+    if (ip.startsWith('172.')) {
+        const parts = ip.split('.');
+        const secondOctet = parseInt(parts[1], 10);
+        if (secondOctet >= 16 && secondOctet <= 31) return true;
+    }
+
+    if (ip === '0.0.0.0') return true;
+
+    const ipv6Lower = ip.toLowerCase();
+    if (ipv6Lower === '::1' || ipv6Lower === '::' || ipv6Lower.startsWith('fe8') || ipv6Lower.startsWith('fe9') || ipv6Lower.startsWith('fea') || ipv6Lower.startsWith('feb') || ipv6Lower.startsWith('fc') || ipv6Lower.startsWith('fd')) {
+        return true;
+    }
+
+    return false;
+}
+
 module.exports = (answer, mediator) => {
     return async (req, res) => {
         const { url } = req.query;
         if (!url) {
             return res.status(400).send('Missing url');
+        }
+
+        try {
+            const parsedUrl = new URL(url);
+            if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+                return res.status(400).send('Invalid protocol');
+            }
+
+            const ip = await resolveIP(parsedUrl.hostname);
+            if (isPrivateIP(ip)) {
+                console.warn(`SSRF Blocked request to private IP ${ip} for URL: ${url}`);
+                return res.status(403).send('Forbidden');
+            }
+        } catch (err) {
+            console.error('Invalid URL or DNS resolution failed:', url, err.message);
+            return res.status(400).send('Invalid URL');
         }
 
         try {
@@ -92,6 +140,12 @@ module.exports = (answer, mediator) => {
                 if (mimeType === 'video/mp4') ext = '.mp4';
                 else if (mimeType === 'application/pdf') ext = '.pdf';
                 originalFilename = `file${ext}`;
+            }
+
+            // Path Traversal Mitigation: sanitize filename to only keep basename
+            originalFilename = path.basename(originalFilename);
+            if (!originalFilename || originalFilename === '.' || originalFilename === '..') {
+                originalFilename = 'file.bin';
             }
 
             const tempFilePath = path.join(tempDir, `${urlHash}_${originalFilename}`);

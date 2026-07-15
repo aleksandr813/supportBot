@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { FileServiceContext } from '../../App';
 
 import './Message.css';
@@ -15,9 +15,22 @@ function formatTime(date) {
 export default function Message({ text, date, isOutgoing, status, attachmentUrl, attachmentType, attachmentName }) {
   const className = isOutgoing ? "message message--outgoing" : "message";
   const [mediaError, setMediaError] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fileService = useContext(FileServiceContext);
   const proxiedUrl = fileService.getProxiedUrl(attachmentUrl, attachmentType);
+
+  useEffect(() => {
+    if (isModalOpen) {
+      const handleKeyDown = (e) => {
+        if (e.key === 'Escape') {
+          setIsModalOpen(false);
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [isModalOpen]);
 
   return (
     <div className={className}>
@@ -25,13 +38,27 @@ export default function Message({ text, date, isOutgoing, status, attachmentUrl,
         <div className="message__attachment">
           {attachmentType === 'image' && (
             !mediaError ? (
-              <img 
-                src={attachmentUrl} 
-                alt={attachmentName || "image"} 
-                className="message__img" 
-                referrerPolicy="no-referrer"
-                onError={() => setMediaError(true)}
-              />
+              <>
+                <img 
+                  src={attachmentUrl} 
+                  alt={attachmentName || "image"} 
+                  className="message__img" 
+                  referrerPolicy="no-referrer"
+                  onError={() => setMediaError(true)}
+                  onClick={() => setIsModalOpen(true)}
+                />
+                {isModalOpen && (
+                  <div className="image-modal" onClick={() => setIsModalOpen(false)}>
+                    <span className="image-modal__close" onClick={() => setIsModalOpen(false)}>&times;</span>
+                    <img 
+                      src={attachmentUrl} 
+                      alt={attachmentName || "image"} 
+                      className="image-modal__content" 
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                )}
+              </>
             ) : (
               <a href={attachmentUrl} target="_blank" rel="noopener noreferrer" className="message__file-link">
                 🖼️ Изображение (Скачать)

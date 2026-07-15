@@ -23,7 +23,7 @@ class Server {
     constructor(mediator, store) {
         this.store = store;
         this.mediator = mediator;
-        this.socket = io(HOST);
+        this.socket = io();
         this.setupSocketListeners();
     }
 

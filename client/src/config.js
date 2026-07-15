@@ -1,5 +1,5 @@
 const CONFIG = {
-    HOST: 'localhost:3003',
+    HOST: '',
 
     MEDIATOR: {
         EVENTS: {
