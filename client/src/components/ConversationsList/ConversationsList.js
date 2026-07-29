@@ -139,7 +139,7 @@ export default function ConversationsList({
 
     return (
     <div className="conversations-list" ref={containerRef}>
-        {conversations.map((conv) => (
+        {conversations.filter((conv) => conv.last_date).map((conv) => (
             <Conversation
                 key={conv.conversation_guid}
                 username={conv.username}
