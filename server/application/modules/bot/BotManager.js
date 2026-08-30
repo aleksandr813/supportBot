@@ -24,15 +24,20 @@ class BotManager extends BaseManager {
     }
 
     
+    createBot(botData) {
+        return new Bot({
+            ...botData,
+            callbacks: {
+                addMessage: (text, conversationGuid, userGuid, attachmentUrl, attachmentType, attachmentName) =>
+                    this.addMessage(text, userGuid, conversationGuid, attachmentUrl, attachmentType, attachmentName),
+            },
+        });
+    }
+
     async loadBots() {
         const bots = await this.db.getBots();
-        bots.forEach(bot => { 
-            this.activeBots[bot.token] = new Bot({ ...bot, 
-                callbacks: {
-                    addMessage: (text, conversationGuid, userGuid, attachmentUrl, attachmentType, attachmentName) => 
-                        this.addMessage(text, userGuid, conversationGuid, attachmentUrl, attachmentType, attachmentName),
-                },
-             }); 
+        bots.forEach(bot => {
+            this.activeBots[bot.token] = this.createBot(bot);
         });
         console.log("Получены боты: \n", this.activeBots);
     }
@@ -69,8 +74,8 @@ class BotManager extends BaseManager {
     }
 
     checkOperatorToken(data, socket, eventName) {
-        const { token, guid } = data || {};
-        if (!this.mediator.get(this.TRIGGERS.CHECK_OPERATOR_TOKEN, { token, guid })) {
+        const { operatorGuid: guid, operatorToken: token } = data || {};
+        if (!this.mediator.get(this.TRIGGERS.CHECK_OPERATOR_TOKEN, { token, guid, socketId: socket.id })) {
             socket.emit(eventName, this.answer.bad(302));
             return false;
         }
@@ -89,22 +94,16 @@ class BotManager extends BaseManager {
 
     async socketAddBot(data, socket) {
         if (!this.checkOperatorToken(data, socket, 'ADD_BOT')) return;
-        const { token, adress, port } = data;
-        if (!token || !adress || !port) {
+        const { token, address, port } = data;
+        if (!token || !address || !port) {
             return socket.emit('ADD_BOT', this.answer.bad(242));
         }
         try {
             const guid = this.common.guid();
-            await this.db.addBot(guid, token, adress, Number(port));
+            await this.db.addBot(guid, token, address, Number(port));
 
-            const botData = { bot_guid: guid, token, adress, port: Number(port) };
-            this.activeBots[token] = new Bot({
-                ...botData,
-                callbacks: {
-                    addMessage: (text, conversationGuid, userGuid, attachmentUrl, attachmentType, attachmentName) =>
-                        this.addMessage(text, userGuid, conversationGuid, attachmentUrl, attachmentType, attachmentName),
-                }
-            });
+            const botData = { bot_guid: guid, token, address, port: Number(port) };
+            this.activeBots[token] = this.createBot(botData);
 
             socket.emit('ADD_BOT', this.answer.good(botData));
         } catch (err) {
@@ -114,28 +113,22 @@ class BotManager extends BaseManager {
 
     async socketUpdateBot(data, socket) {
         if (!this.checkOperatorToken(data, socket, 'UPDATE_BOT')) return;
-        const { guid, token, adress, port } = data;
-        if (!guid || !token || !adress || !port) {
+        const { guid, token, address, port } = data;
+        if (!guid || !token || !address || !port) {
             return socket.emit('UPDATE_BOT', this.answer.bad(242));
         }
         try {
             const oldBot = Object.values(this.activeBots).find(b => b.guid === guid);
             const oldToken = oldBot ? oldBot.token : null;
 
-            await this.db.updateBot(guid, token, adress, Number(port));
+            await this.db.updateBot(guid, token, address, Number(port));
 
             if (oldToken && oldToken !== token) {
                 delete this.activeBots[oldToken];
             }
 
-            const botData = { bot_guid: guid, token, adress, port: Number(port) };
-            this.activeBots[token] = new Bot({
-                ...botData,
-                callbacks: {
-                    addMessage: (text, conversationGuid, userGuid, attachmentUrl, attachmentType, attachmentName) =>
-                        this.addMessage(text, userGuid, conversationGuid, attachmentUrl, attachmentType, attachmentName),
-                }
-            });
+            const botData = { bot_guid: guid, token, address, port: Number(port) };
+            this.activeBots[token] = this.createBot(botData);
 
             socket.emit('UPDATE_BOT', this.answer.good(botData));
         } catch (err) {

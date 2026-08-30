@@ -14,6 +14,8 @@ class OperatorManager extends BaseManager {
 
         this.mediator.set(CHECK_OPERATOR_TOKEN, (data) => this.triggerCheckOperatorToken(data));
 
+        this.restoreActiveOperators();
+
         if (!this.io) return;
 
         this.io.on('connection', (socket) => {
@@ -24,8 +26,26 @@ class OperatorManager extends BaseManager {
         });
     }
 
+    // Подхватывает операторов, у которых в БД сохранён активный токен (выданный до
+    // перезапуска процесса), чтобы браузер, ещё хранящий этот токен, не терял сессию
+    // после docker restart / редеплоя сервера.
+    async restoreActiveOperators() {
+        if (!this.db || !this.db.getActiveOperators) return;
+        try {
+            const rows = await this.db.getActiveOperators();
+            for (const row of rows) {
+                const operator = new Operator({ db: this.db, common: this.common, socketId: null });
+                operator.name = row.name;
+                operator.guid = row.operator_guid;
+                operator.token = row.token;
+                this.operators[operator.guid] = operator;
+            }
+        } catch (err) {
+            console.error('Failed to restore operator sessions:', err);
+        }
+    }
+
     handleDisconnect(socket) {
-        console.log(socket.id);
         const operator = this.getOperatorBySocketId(socket.id);
         if (!operator) {
             return;
@@ -51,15 +71,17 @@ class OperatorManager extends BaseManager {
     }
 
     socketLogout(data, socket) {
-        const { token } = data;
+        const { operatorToken: token } = data;
         const operator = this.getOperatorBySocketId(socket.id);
         if (operator && operator.token === token) {
             operator.logout();
         }
     }
 
-    triggerCheckOperatorToken({ token, guid }) {
-        if (!this.operators[guid] || this.operators[guid].token !== token) return false;
+    triggerCheckOperatorToken({ token, guid, socketId }) {
+        const operator = this.operators[guid];
+        if (!operator || operator.token !== token) return false;
+        if (socketId) operator.socketId = socketId;
         return true;
     }
 }

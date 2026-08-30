@@ -17,6 +17,11 @@ class Operator {
             this.name = name;
             this.guid = operator_guid;
             this.token = this.common.token();
+            // Персистим токен в БД, чтобы сессия оператора переживала перезапуск сервера
+            // (docker restart/redeploy) и не терялась, пока браузер не перезагрузит страницу.
+            if (this.db.setOperatorToken) {
+                await this.db.setOperatorToken(this.guid, this.token);
+            }
             return true;
         }
         return false;
@@ -24,6 +29,9 @@ class Operator {
 
     logout() {
         this.token = '';
+        if (this.guid && this.db.setOperatorToken) {
+            this.db.setOperatorToken(this.guid, '').catch(err => console.error('Failed to clear operator token:', err));
+        }
     }
 
     get() {

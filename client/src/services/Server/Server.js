@@ -1,8 +1,7 @@
-import { io, Socket } from "socket.io-client";
+import { io } from "socket.io-client";
 import CONFIG from "../../config";
 
-const { HOST } = CONFIG;
-const { 
+const {
     LOGIN, 
     LOGOUT, 
     GET_CONVERSATIONS, 
@@ -49,9 +48,8 @@ class Server {
 
     request(event, data = {}) {
         const _data = {
-            ...this.store.getUserParams(),
             ...data,
-        
+            ...this.store.getUserParams(),
         }
         this.socket.emit(event, _data);
     }

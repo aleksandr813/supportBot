@@ -1,21 +1,28 @@
+const CORS_ORIGIN = process.env.CORS_ORIGIN || "*";
+
 const CONFIG = {
 
     CORS: {
-        origin: "*",
+        origin: CORS_ORIGIN,
         middleware: (_, res, next) => {
             res.header('Content-Type', 'application/json; charset=utf-8');
-            res.header('Access-Control-Allow-Origin', '*');
+            res.header('Access-Control-Allow-Origin', CORS_ORIGIN);
             next();
         }
     },
-    PORT: 3003,
+    PORT: process.env.PORT || 3003,
 
     INTERVALS: {
         TEMP_CLEANUP: 12 * 60 * 60 * 1000,
         TEMP_MAX_FILE_AGE: 24 * 60 * 60 * 1000
     },
 
-    DATABASE: 'data.db',
+    CLIENT_BUILD_PATH: process.env.CLIENT_BUILD_PATH || `${__dirname}/public`,
+
+    DATABASE: process.env.DATABASE || 'data.db',
+
+    DEFAULT_OPERATOR_LOGIN: process.env.DEFAULT_OPERATOR_LOGIN || 'admin',
+    DEFAULT_OPERATOR_PASSWORD: process.env.DEFAULT_OPERATOR_PASSWORD || 'admin',
 
     MEDIATOR: {
         EVENTS: {
@@ -42,6 +49,8 @@ const CONFIG = {
         CREATE_CONVERSATION: '/createConversation',
         END_CONVERSATION: '/endConversation',
         GET_USER: '/getUser',
+        UPLOAD: '/upload',
+        VIDEO_PROXY: '/videoProxy',
     },
 
     SOCKET: {

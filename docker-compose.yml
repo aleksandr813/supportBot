@@ -1,0 +1,29 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    ports:
+      - "${SERVER_PORT:-3003}:3003"
+    environment:
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      DEFAULT_OPERATOR_LOGIN: ${DEFAULT_OPERATOR_LOGIN:-admin}
+      DEFAULT_OPERATOR_PASSWORD: ${DEFAULT_OPERATOR_PASSWORD:-admin}
+    volumes:
+      - db-data:/data
+    restart: unless-stopped
+
+  maxbot:
+    build:
+      context: .
+      dockerfile: maxBot/Dockerfile
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN:?BOT_TOKEN is required, set it in .env}
+      SERVER_TOKEN: ${SERVER_TOKEN:?SERVER_TOKEN is required, set it in .env}
+      SERVER_URL: http://server:3003
+    depends_on:
+      - server
+    restart: unless-stopped
+
+volumes:
+  db-data:

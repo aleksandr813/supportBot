@@ -1,1 +1,5 @@
 temp
+node_modules
+client/build
+server/public
+.env

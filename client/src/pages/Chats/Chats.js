@@ -1,5 +1,4 @@
 import React, { useContext, useState, useEffect } from 'react';
-import md5 from 'md5';
 import { ServerContext, MediatorContext } from '../../App';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import ConversationsList from '../../components/ConversationsList/ConversationsList';

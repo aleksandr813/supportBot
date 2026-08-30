@@ -24,10 +24,10 @@ class ConversationManager extends BaseManager {
         });
     }
 
-    checkOperatorToken(data, socket) {
-        const { token, guid } = data;
-        if (!this.mediator.get(this.TRIGGERS.CHECK_OPERATOR_TOKEN, { token, guid })) {
-            socket.emit(this.answer.bad(302));
+    checkOperatorToken(data, socket, eventName) {
+        const { operatorGuid: guid, operatorToken: token } = data;
+        if (!this.mediator.get(this.TRIGGERS.CHECK_OPERATOR_TOKEN, { token, guid, socketId: socket.id })) {
+            socket.emit(eventName, this.answer.bad(302));
             return false;
         }
         return true;
@@ -112,7 +112,7 @@ class ConversationManager extends BaseManager {
 
     async socketGetConversationsList(data, socket) {
 
-        if (!this.checkOperatorToken(data, socket)) return;
+        if (!this.checkOperatorToken(data, socket, GET_CONVERSATIONS)) return;
 
         const { limit = 20, cursor = null } = data;
 
@@ -126,18 +126,18 @@ class ConversationManager extends BaseManager {
             ? { lastDate: lastItem.last_date, conversationGuid: lastItem.conversation_guid }
             : null;
 
-        const conversatons ={
+        const conversations = {
             items,
             nextCursor,
             hasMore,
         };
 
-        socket.emit(GET_CONVERSATIONS, this.answer.good(conversatons));
+        socket.emit(GET_CONVERSATIONS, this.answer.good(conversations));
     }
 
     async socketGetConversationInfo(data, socket) {
 
-        if (!this.checkOperatorToken(data, socket)) return;
+        if (!this.checkOperatorToken(data, socket, GET_CONVERSATION_INFO)) return;
 
         const { conversationGuid } = data;
 
@@ -148,7 +148,7 @@ class ConversationManager extends BaseManager {
 
     async socketGetConversationMessages(data, socket) {
 
-        if (!this.checkOperatorToken(data, socket)) return;
+        if (!this.checkOperatorToken(data, socket, GET_CONVERSATION_MESSAGES)) return;
 
         const { conversationGuid, limit = 20, cursor = null } = data;
 
@@ -175,7 +175,7 @@ class ConversationManager extends BaseManager {
     }
 
     async socketSendMessage(data, socket) {
-        if (!this.checkOperatorToken(data, socket)) return;
+        if (!this.checkOperatorToken(data, socket, SEND_MESSAGE)) return;
 
         const { conversationGuid, tempId = null } = data;
 

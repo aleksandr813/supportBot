@@ -2,11 +2,8 @@ module.exports = (answer, mediator) => {
     const { NEW_MESSAGE } = mediator.getEventTypes();
     return async (req, res) => {
 
-        const message = {
-            token,
-            externalId,
-            text,
-        } = req.body;
+        const message = req.body;
+        const { token, externalId, text } = message;
 
         const { GET_BOT_BY_TOKEN } = mediator.getTriggerTypes();
         if (!message.token || !mediator.get(GET_BOT_BY_TOKEN, message.token)) {

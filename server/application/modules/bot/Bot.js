@@ -1,10 +1,10 @@
 class Bot {
     constructor(options) {
-        const { bot_guid, token, adress, port, callbacks } = options;
+        const { bot_guid, token, address, port, callbacks } = options;
 
         this.guid = bot_guid;
         this.token = token;
-        this.adress = adress;
+        this.address = address;
         this.port = port;
         this.callbacks = callbacks || {};
     }
@@ -13,13 +13,13 @@ class Bot {
         return {
             guid: this.guid,
             token: this.token,
-            adress: this.adress,
+            address: this.address,
             port: this.port,
         }
     }
 
     getBaseUrl() {
-        const host = /^https?:\/\//i.test(this.adress) ? this.adress : `http://${this.adress}`;
+        const host = /^https?:\/\//i.test(this.address) ? this.address : `http://${this.address}`;
         return `${host}:${this.port}`;
     }
 

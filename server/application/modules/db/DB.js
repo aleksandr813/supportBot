@@ -1,25 +1,36 @@
+const path = require('path');
+const crypto = require('crypto');
 const sqlite3 = require('sqlite3').verbose();
 const ORM = require('./ORM');
 
 
 class DB {
-    constructor({ DATABASE }) {
-        this.db = new sqlite3.Database(`${__dirname}/${DATABASE}`);
+    constructor({ DATABASE, DEFAULT_OPERATOR_LOGIN, DEFAULT_OPERATOR_PASSWORD }) {
+        const dbPath = DATABASE === ':memory:' || path.isAbsolute(DATABASE)
+            ? DATABASE
+            : path.join(__dirname, DATABASE);
+        this.db = new sqlite3.Database(dbPath);
         this.orm = new ORM(this.db);
-        this.initTables();
+        this.initTables(DEFAULT_OPERATOR_LOGIN, DEFAULT_OPERATOR_PASSWORD);
     }
 
-    initTables() {
+    initTables(defaultOperatorLogin, defaultOperatorPassword) {
         this.db.serialize(() => {
             this.db.run(`
                 CREATE TABLE IF NOT EXISTS "bots" (
                     "bot_guid" TEXT NOT NULL UNIQUE,
                     "token" TEXT UNIQUE,
-                    "adress" TEXT DEFAULT 'localhost',
+                    "address" TEXT DEFAULT 'localhost',
                     "port" INTEGER DEFAULT 3004,
                     PRIMARY KEY("bot_guid")
                 )
             `);
+
+            this.db.run(`ALTER TABLE bots RENAME COLUMN adress TO address`, err => {
+                if (err && !/no such column|no such table|duplicate column/i.test(err.message)) {
+                    console.error('Failed to migrate bots.adress to bots.address:', err);
+                }
+            });
 
             this.db.run(`
                 CREATE TABLE IF NOT EXISTS "conversations" (
@@ -76,15 +87,38 @@ class DB {
                 )
             `);
 
+            this.seedDefaultOperator(defaultOperatorLogin, defaultOperatorPassword);
+
             this.db.run(`
                 CREATE INDEX IF NOT EXISTS idx_conversations_date_guid 
                 ON conversations(last_date DESC, conversation_guid DESC)
             `);
 
             this.db.run(`
-                CREATE INDEX IF NOT EXISTS idx_messages_conv_id 
+                CREATE INDEX IF NOT EXISTS idx_messages_conv_id
                 ON messages(conversation_guid, message_id DESC)
             `);
+        });
+    }
+
+    seedDefaultOperator(login, password) {
+        if (!login || !password) return;
+
+        this.db.get(`SELECT COUNT(*) as count FROM operators`, (err, row) => {
+            if (err) return console.error('Failed to check operators table for seeding:', err);
+            if (row.count > 0) return;
+
+            const guid = crypto.randomUUID();
+            const passwordHash = crypto.createHash('md5').update(password).digest('hex');
+
+            this.db.run(
+                `INSERT INTO operators (operator_guid, name, password_hash) VALUES (?, ?, ?)`,
+                [guid, login, passwordHash],
+                err => {
+                    if (err) return console.error('Failed to seed default operator:', err);
+                    console.log(`Создан оператор по умолчанию: ${login} (не забудьте сменить пароль)`);
+                }
+            );
         });
     }
 
@@ -100,17 +134,17 @@ class DB {
         return this.orm.update('users', { is_blocked: isBlocked }, { external_id: externalId, bot_guid: botGuid });
     }
 
-    addBot(guid, token, adress, port) {
+    addBot(guid, token, address, port) {
         return this.orm.insert('bots', {
             bot_guid: guid,
             token,
-            adress,
+            address,
             port
         });
     }
 
-    updateBot(guid, token, adress, port) {
-        return this.orm.update('bots', { token, adress, port }, { bot_guid: guid });
+    updateBot(guid, token, address, port) {
+        return this.orm.update('bots', { token, address, port }, { bot_guid: guid });
     }
 
     deleteBot(guid) {
@@ -169,6 +203,14 @@ class DB {
 
     getOperatorByLogin(name) {
         return this.orm.get('operators', {name: name});
+    }
+
+    setOperatorToken(guid, token) {
+        return this.orm.update('operators', { token }, { operator_guid: guid });
+    }
+
+    getActiveOperators() {
+        return this.orm.raw(`SELECT * FROM operators WHERE token IS NOT NULL AND token != ''`);
     }
 
     getConversationsList(limit = 20, cursor) {

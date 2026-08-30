@@ -1,3 +1,3 @@
-module.exports = (_, res) => {
-    res.send('not found');
+module.exports = (answer) => (_, res) => {
+    res.status(404).send(answer.bad(404));
 }

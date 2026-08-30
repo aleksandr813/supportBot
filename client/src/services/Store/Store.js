@@ -13,8 +13,8 @@ class Store {
 
     getUserParams() {
         return {
-            guid: this.guid,
-            token: this.token,
+            operatorGuid: this.guid,
+            operatorToken: this.token,
         }
     }
 

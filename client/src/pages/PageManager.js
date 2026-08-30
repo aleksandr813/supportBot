@@ -3,8 +3,6 @@ import Login from './Login/Login';
 import Chats from './Chats/Chats';
 import Settings from './Settings/Settings';
 
-import CONFIG from '../config';
-
 export const PAGES = {
     LOGIN: 'LOGIN',
     CHATS: 'CHATS',

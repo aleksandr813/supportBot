@@ -95,8 +95,8 @@ class UserManager extends BaseManager {
     }
 
     checkOperatorToken(data, socket, eventName) {
-        const { token, guid } = data || {};
-        if (!this.mediator.get(this.TRIGGERS.CHECK_OPERATOR_TOKEN, { token, guid })) {
+        const { operatorGuid: guid, operatorToken: token } = data || {};
+        if (!this.mediator.get(this.TRIGGERS.CHECK_OPERATOR_TOKEN, { token, guid, socketId: socket.id })) {
             socket.emit(eventName, this.answer.bad(302));
             return false;
         }

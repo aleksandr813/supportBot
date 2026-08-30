@@ -1,7 +1,7 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useRef } from 'react';
 import { ServerContext, MediatorContext } from '../../App';
 import Sidebar from '../../components/Sidebar/Sidebar';
-import { Trash2, Edit, Plus, Check, X, UserX, UserCheck, Bot as BotIcon, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Trash2, Edit, Plus, Check, X, UserX, UserCheck, Bot as BotIcon, AlertTriangle } from 'lucide-react';
 
 import './Settings.css';
 
@@ -13,13 +13,18 @@ export default function Settings({ setPage, PAGES }) {
   
   const [bots, setBots] = useState([]);
   const [editingBotGuid, setEditingBotGuid] = useState(null);
-  const [editForm, setEditForm] = useState({ token: '', adress: '', port: '' });
-  const [newBotForm, setNewBotForm] = useState({ token: '', adress: 'localhost', port: '3004' });
+  const [editForm, setEditForm] = useState({ token: '', address: '', port: '' });
+  const [newBotForm, setNewBotForm] = useState({ token: '', address: 'localhost', port: '3004' });
   const [botError, setBotError] = useState('');
 
   const [blockedUsers, setBlockedUsers] = useState([]);
   const [newBlockForm, setNewBlockForm] = useState({ externalId: '', botGuid: '' });
   const [userError, setUserError] = useState('');
+
+  const botsRef = useRef(bots);
+  useEffect(() => {
+    botsRef.current = bots;
+  }, [bots]);
 
   const handleNavigate = (key) => {
     if (key === 'chats') {
@@ -50,7 +55,7 @@ export default function Settings({ setPage, PAGES }) {
     const handleAddBot = (res) => {
       if (res.result === 'ok') {
         setBots(prev => [...prev, res.data]);
-        setNewBotForm({ token: '', adress: 'localhost', port: '3004' });
+        setNewBotForm({ token: '', address: 'localhost', port: '3004' });
         setBotError('');
       } else {
         setBotError(res.error?.message || 'Ошибка добавления бота');
@@ -90,7 +95,7 @@ export default function Settings({ setPage, PAGES }) {
         const { externalId, botGuid, isBlocked } = res.data;
         if (isBlocked) {
           server.getBlockedUsers();
-          setNewBlockForm({ externalId: '', botGuid: bots[0]?.bot_guid || '' });
+          setNewBlockForm({ externalId: '', botGuid: botsRef.current[0]?.bot_guid || '' });
         } else {
           setBlockedUsers(prev => prev.filter(u => !(u.externalId === externalId && u.botGuid === botGuid)));
         }
@@ -138,7 +143,7 @@ export default function Settings({ setPage, PAGES }) {
 
   const handleAddBotSubmit = (e) => {
     e.preventDefault();
-    if (!newBotForm.token || !newBotForm.adress || !newBotForm.port) {
+    if (!newBotForm.token || !newBotForm.address || !newBotForm.port) {
       setBotError('Заполните все поля нового бота');
       return;
     }
@@ -149,20 +154,20 @@ export default function Settings({ setPage, PAGES }) {
     setEditingBotGuid(bot.bot_guid);
     setEditForm({
       token: bot.token,
-      adress: bot.adress,
+      address: bot.address,
       port: bot.port.toString(),
     });
   };
 
   const handleUpdateBotSubmit = (guid) => {
-    if (!editForm.token || !editForm.adress || !editForm.port) {
+    if (!editForm.token || !editForm.address || !editForm.port) {
       setBotError('Поля бота не могут быть пустыми');
       return;
     }
     server.updateBot({
       guid,
       token: editForm.token,
-      adress: editForm.adress,
+      address: editForm.address,
       port: editForm.port,
     });
   };
@@ -271,11 +276,11 @@ export default function Settings({ setPage, PAGES }) {
                               <input
                                 type="text"
                                 className="table-input"
-                                value={editForm.adress}
-                                onChange={(e) => setEditForm({ ...editForm, adress: e.target.value })}
+                                value={editForm.address}
+                                onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
                               />
                             ) : (
-                              bot.adress
+                              bot.address
                             )}
                           </td>
                           <td>
@@ -357,8 +362,8 @@ export default function Settings({ setPage, PAGES }) {
                     <input
                       type="text"
                       placeholder="localhost или IP"
-                      value={newBotForm.adress}
-                      onChange={(e) => setNewBotForm({ ...newBotForm, adress: e.target.value })}
+                      value={newBotForm.address}
+                      onChange={(e) => setNewBotForm({ ...newBotForm, address: e.target.value })}
                       required
                     />
                   </div>
@@ -461,7 +466,7 @@ export default function Settings({ setPage, PAGES }) {
                       <option value="" disabled>Выберите бота...</option>
                       {bots.map((b) => (
                         <option key={b.bot_guid} value={b.bot_guid}>
-                          {b.token.substring(0, 15)}... ({b.adress}:{b.port})
+                          {b.token.substring(0, 15)}... ({b.address}:{b.port})
                         </option>
                       ))}
                     </select>

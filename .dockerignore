@@ -1,0 +1,8 @@
+**/node_modules
+client/build
+server/public
+maxBot/temp_uploads
+temp
+.git
+.env
+*.log

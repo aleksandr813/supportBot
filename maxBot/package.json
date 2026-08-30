@@ -5,6 +5,7 @@
     "multer": "^2.2.0"
   },
   "scripts": {
-    "start": "NODE_TLS_REJECT_UNAUTHORIZED=0 node bot.js"
+    "start": "NODE_TLS_REJECT_UNAUTHORIZED=0 node bot.js",
+    "test": "node --test"
   }
 }

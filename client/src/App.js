@@ -1,8 +1,6 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useRef } from 'react';
 import PageManager from './pages/PageManager';
 
-import Mediator from './services/Mediator/Mediator';
 import Server from './services/Server/Server';
 import Store from './services/Store/Store';
 import FileService from './services/FileService/FileService';
@@ -17,10 +15,18 @@ export const ServerContext = React.createContext(null);
 export const FileServiceContext = React.createContext(null);
 
 function App() {
-  const store = new Store();
   const mediator = useMediator();
-  const server = new Server(mediator, store);
-  const fileService = new FileService();
+
+  const storeRef = useRef(null);
+  const fileServiceRef = useRef(null);
+  const serverRef = useRef(null);
+
+  if (!storeRef.current) storeRef.current = new Store();
+  if (!fileServiceRef.current) fileServiceRef.current = new FileService();
+  if (!serverRef.current) serverRef.current = new Server(mediator, storeRef.current);
+
+  const server = serverRef.current;
+  const fileService = fileServiceRef.current;
 
   return (
     <div className="App">

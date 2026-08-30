@@ -23,10 +23,10 @@ function Router(answer, mediator) {
     router.post(URLS.CREATE_CONVERSATION, useCreateConversation(answer, mediator));
     router.post(URLS.END_CONVERSATION, useEndConversation(answer, mediator));
     router.post(URLS.GET_USER, useGetUserHandler(answer, mediator));
-    router.post('/upload', upload.single('file'), useUploadHandler(answer, mediator));
-    router.get('/videoProxy', useVideoProxyHandler(answer, mediator));
+    router.post(URLS.UPLOAD, upload.single('file'), useUploadHandler(answer, mediator));
+    router.get(URLS.VIDEO_PROXY, useVideoProxyHandler(answer, mediator));
 
-    router.all('/*path', notFoundHandler);
+    router.all('/*path', notFoundHandler(answer));
 
     return router;
 }

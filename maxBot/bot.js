@@ -33,7 +33,9 @@ const {
 bot.api.setMyCommands([
     { name: 'start', description: 'Начать обращение' },
     { name: 'close', description: 'Закрыть обращение' },
-]);
+]).catch(error => {
+    console.error('Failed to register bot commands with MAX:', error);
+});
 
 bot.command('start', handleStart);
 bot.command('close', handleClose);
@@ -62,7 +64,9 @@ bot.on('message_created', async (ctx) => {
     return handleUserMessage(ctx);
 });
 
-bot.start();
+bot.start().catch(error => {
+    console.error('Failed to start MAX bot polling:', error);
+});
 
 const app = express();
 app.use(express.json());

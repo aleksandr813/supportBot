@@ -30,9 +30,9 @@ app.use(CONFIG.CORS.middleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(express.static(`${__dirname}/public`));
+app.use(express.static(CONFIG.CLIENT_BUILD_PATH));
 app.use('/', new Router(answer, mediator));
 
 const startLog = `supportBot Server started at PORT ${PORT} \nwith CORS: ${CONFIG.CORS.origin}`;
 
-server.listen(PORT, () => console.log(startLog));
+server.listen(PORT, '0.0.0.0', () => console.log(startLog));
