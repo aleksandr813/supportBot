@@ -14,7 +14,6 @@ class OperatorManager extends BaseManager {
 
         this.mediator.set(CHECK_OPERATOR_TOKEN, (data) => this.triggerCheckOperatorToken(data));
 
-        this.restoreActiveOperators();
 
         if (!this.io) return;
 
@@ -24,25 +23,6 @@ class OperatorManager extends BaseManager {
 
             socket.on('disconnect', () => this.handleDisconnect(socket));
         });
-    }
-
-    // Подхватывает операторов, у которых в БД сохранён активный токен (выданный до
-    // перезапуска процесса), чтобы браузер, ещё хранящий этот токен, не терял сессию
-    // после docker restart / редеплоя сервера.
-    async restoreActiveOperators() {
-        if (!this.db || !this.db.getActiveOperators) return;
-        try {
-            const rows = await this.db.getActiveOperators();
-            for (const row of rows) {
-                const operator = new Operator({ db: this.db, common: this.common, socketId: null });
-                operator.name = row.name;
-                operator.guid = row.operator_guid;
-                operator.token = row.token;
-                this.operators[operator.guid] = operator;
-            }
-        } catch (err) {
-            console.error('Failed to restore operator sessions:', err);
-        }
     }
 
     handleDisconnect(socket) {
