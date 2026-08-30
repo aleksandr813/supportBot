@@ -5,7 +5,6 @@ const CONFIG = {
     CORS: {
         origin: CORS_ORIGIN,
         middleware: (_, res, next) => {
-            res.header('Content-Type', 'application/json; charset=utf-8');
             res.header('Access-Control-Allow-Origin', CORS_ORIGIN);
             next();
         }
