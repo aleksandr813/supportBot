@@ -20,7 +20,7 @@ module.exports = (bot, answer) => {
                 extra.attachments = attachments;
             }
             const sentMessage = await bot.api.sendMessageToUser(userId, text || '', extra);
-            console.log("SENT MESSAGE RESPONSE:", JSON.stringify(sentMessage, null, 2));
+            //console.log("SENT MESSAGE RESPONSE:", JSON.stringify(sentMessage, null, 2));
             
             let attachmentUrl = null;
             let attachmentType = null;

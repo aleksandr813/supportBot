@@ -47,7 +47,7 @@ bot.on('message_created', async (ctx) => {
         return handleContact(ctx);
     }
 
-    console.log("INCOMING MESSAGE:", JSON.stringify(ctx.message, null, 2));
+    //console.log("INCOMING MESSAGE:", JSON.stringify(ctx.message, null, 2));
 
     const text = ctx.message?.body?.text?.trim() || '';
     const attachments = ctx.message?.body?.attachments || [];

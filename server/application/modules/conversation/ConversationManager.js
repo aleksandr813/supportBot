@@ -45,7 +45,7 @@ class ConversationManager extends BaseManager {
 
     async eventNewMessage(message = {}) {
         const { token, externalId, text, attachments } = message;
-        console.log("EVENT NEW MESSAGE RECEIVED:", JSON.stringify(message, null, 2));
+        //console.log("EVENT NEW MESSAGE RECEIVED:", JSON.stringify(message, null, 2));
         const date = new Date().toISOString();
 
         const botGuid = this.mediator.get(this.TRIGGERS.GET_BOT_BY_TOKEN, token).guid;
