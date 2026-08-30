@@ -1,5 +1,7 @@
 const MESSAGES = require('./messages');
 
+const USER_BLOCKED_CODE = 505;
+
 function getExternalId(ctx) {
     return String(ctx.user.user_id);
 }
@@ -9,6 +11,9 @@ function getUsername(ctx) {
 }
 
 function getErrorMessage(result) {
+    if (result.error?.code === USER_BLOCKED_CODE) {
+        return MESSAGES.BLOCKED;
+    }
     return result.error?.message || MESSAGES.ERROR;
 }
 
