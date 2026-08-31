@@ -50,7 +50,7 @@
 
 5. Войдите на сайт под `DEFAULT_OPERATOR_LOGIN` / `DEFAULT_OPERATOR_PASSWORD` и в разделе настроек добавьте бота:
 
-   - адрес: **`maxbot`** (имя сервиса в `docker-compose.yml`, не `localhost` - см. ниже, почему это важно)
+   - адрес: **`maxbot`** (имя сервиса в `docker-compose.yml`, не `localhost`)
    - порт: `3004`
    - токен: значение `SERVER_TOKEN` из `.env`
 
