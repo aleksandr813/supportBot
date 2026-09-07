@@ -6,6 +6,24 @@ const createHandlers = require('./handlers');
 const Router = require('./router/Router');
 const Answer = require('./answer');
 
+const POLLING_RETRY_DELAY_MS = 5_000;
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function startPollingWithRecovery() {
+    while (true) {
+        try {
+            await bot.start();
+        } catch (error) {
+            console.error('[maxBot] MAX bot polling failed, will retry:', error);
+        }
+        bot.stop();
+        await sleep(POLLING_RETRY_DELAY_MS);
+    }
+}
+
 const bot = new Bot(CONFIG.BOT_TOKEN);
 
 const originalGetStreamFromSource = bot.api.upload.getStreamFromSource;
@@ -64,9 +82,7 @@ bot.on('message_created', async (ctx) => {
     return handleUserMessage(ctx);
 });
 
-bot.start().catch(error => {
-    console.error('Failed to start MAX bot polling:', error);
-});
+startPollingWithRecovery();
 
 const app = express();
 app.use(express.json());
